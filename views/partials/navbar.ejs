@@ -1,0 +1,66 @@
+<button class="btn btn-primary d-lg-none mobile-toggle-btn shadow" id="mobileToggle">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+<aside class="nexus-sidebar shadow-lg" id="sidebar">
+    <div class="sidebar-header">
+        <div class="brand-logo-small">
+            <i class="fa-solid fa-rocket text-white"></i>
+        </div>
+        <h4 class="fw-black text-white mb-0 ms-2">Nexus<span class="text-primary">.</span></h4>
+        <button class="btn text-white d-lg-none ms-auto p-0" id="closeSidebar">
+            <i class="fa-solid fa-xmark fs-4"></i>
+        </button>
+    </div>
+
+    <ul class="sidebar-nav">
+        <li class="nav-item">
+            <a href="/dashboard" class="nav-link">
+                <i class="fa-solid fa-chart-line nav-icon"></i>
+                <span class="nav-text">لوحة القيادة</span>
+            </a>
+        </li>
+        
+        <% if (locals.user && locals.user.role === 'admin') { %>
+                    <li class="nav-item">
+            <a href="/admin/users" class="nav-link">
+                <i class="fa-solid fa-users-gear nav-icon"></i>
+                <span class="nav-text">إدارة الصلاحيات</span>
+            </a>
+        </li>
+        <% } %>
+        
+        <% if (locals.user && locals.user.role === 'admin') { %>
+            <li class="nav-item">
+                <a href="/admin/inventory" class="nav-link">
+                    <i class="fa-solid fa-users-gear nav-icon"></i>
+                    <span class="nav-text">المخزون</span>
+                </a>
+            </li>
+            <% } %>
+            
+            <% if (locals.user && locals.user.role === 'admin') { %>
+            <li class="nav-item">
+                <a href="/admin/pos" class="nav-link">
+                    <i class="fa-solid fa-users-gear nav-icon"></i>
+                    <span class="nav-text">نقاط البيع</span>
+                </a>
+            </li>
+            <% } %>
+    </ul>
+
+    <div class="sidebar-footer">
+        <div class="user-profile">
+            <div class="avatar"><%= user.name.charAt(0).toUpperCase() %></div>
+            <div class="user-info">
+                <span class="user-name text-truncate" title="<%= user.name %>"><%= user.name %></span>
+                <span class="user-role"><%= user.role === 'admin' ? 'مدير نظام' : 'موظف دعم' %></span>
+            </div>
+        </div>
+        <a href="/auth/logout" class="logout-btn" title="تسجيل الخروج">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </a>
+    </div>
+</aside>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>

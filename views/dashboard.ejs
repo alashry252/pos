@@ -1,0 +1,378 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* =========================================
+       ✨ تصميم الـ Dashboard الفائق (Enterprise UI)
+       ========================================= */
+    body { 
+        background-color: #f1f5f9; 
+        font-family: 'Inter', 'Noto Sans Arabic', sans-serif;
+    }
+    
+    /* ترويسة اللوحة - Glassmorphism & Gradients */
+    .dash-header {
+        background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+        border-radius: 1.5rem;
+        padding: 2.5rem 2rem;
+        color: white;
+        box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .dash-header::before {
+        content: ''; position: absolute; top: -50%; right: -10%;
+        width: 400px; height: 400px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%; filter: blur(20px);
+    }
+    
+    .dash-header::after {
+        content: ''; position: absolute; bottom: -30%; left: -5%;
+        width: 250px; height: 250px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%; filter: blur(15px);
+    }
+
+    /* بطاقات الإحصائيات (Stat Cards) */
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px -5px rgba(0,0,0,0.08);
+        border-color: #cbd5e1;
+    }
+
+    .stat-card::after {
+        content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+        background: var(--card-accent, transparent);
+    }
+
+    .stat-icon {
+        width: 64px; height: 64px;
+        border-radius: 1.2rem;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.75rem;
+        box-shadow: inset 0 2px 4px rgba(255,255,255,0.5);
+    }
+
+    /* حاويات الرسوم والجداول */
+    .dashboard-panel {
+        background: #ffffff;
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+        height: 100%;
+    }
+
+    /* أزرار الإجراءات السريعة */
+    .quick-action-btn {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 1.5rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0; 
+        border-radius: 1.25rem; color: #475569; font-weight: 700; 
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; gap: 0.75rem;
+    }
+    .quick-action-btn:hover { 
+        background: #ffffff; color: #4f46e5; 
+        transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        border-color: #cbd5e1;
+    }
+    .quick-action-btn i { font-size: 2rem; color: #4f46e5; transition: transform 0.2s; }
+    .quick-action-btn:hover i { transform: scale(1.1); }
+
+    /* الجدول الاحترافي */
+    .custom-table th { font-weight: 800; letter-spacing: 0.5px; }
+    .custom-table tr { transition: background-color 0.2s; cursor: default; }
+    .custom-table tbody tr:hover { background-color: #f8fafc; }
+
+    /* الأنيميشن المتسلسل (Staggered Animations) */
+    .fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="main-content-wrapper">
+    <main class="container-fluid px-3 px-lg-4 py-4">
+        
+        <div class="dash-header d-flex flex-column flex-md-row justify-content-between align-items-md-center fade-in-up mb-4 gap-3">
+            <div style="z-index: 1;">
+                <h2 class="fw-black mb-1"><span id="timeGreeting">مرحباً</span>، <%= locals.user?.name?.split(' ')[0] || 'يا مدير' %>! ✨</h2>
+                <p class="mb-0 opacity-75 fs-6">الأنظمة تعمل بكفاءة. إليك ملخص أداء العمليات لهذا اليوم.</p>
+            </div>
+            <div class="d-flex align-items-center gap-3" style="z-index: 1;">
+                <div class="bg-white bg-opacity-25 px-4 py-2 rounded-pill fw-bold text-white" style="backdrop-filter: blur(10px);">
+                    <i class="fa-regular fa-calendar-check me-2"></i> <span id="currentDate"></span>
+                </div>
+                <button class="btn btn-light rounded-pill fw-bold px-4 shadow-sm text-primary transition-all hover-lift" onclick="exportReport()">
+                    <i class="fa-solid fa-file-export me-1"></i> تقرير اليوم
+                </button>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-sm-6 col-xl-3 fade-in-up delay-1">
+                <div class="stat-card" style="--card-accent: #10b981;">
+                    <div class="stat-icon bg-success bg-opacity-10 text-success"><i class="fa-solid fa-sack-dollar"></i></div>
+                    <div>
+                        <p class="text-muted small fw-bold mb-1">إيرادات اليوم</p>
+                        <h3 class="fw-black mb-0 text-dark"><%= (locals.stats?.todaysSales || 0).toLocaleString('ar-EG') %> <span class="fs-6 text-muted fw-normal">ج.م</span></h3>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-sm-6 col-xl-3 fade-in-up delay-2">
+                <div class="stat-card" style="--card-accent: #3b82f6;">
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="fa-solid fa-file-invoice"></i></div>
+                    <div>
+                        <p class="text-muted small fw-bold mb-1">العمليات المنفذة</p>
+                        <h3 class="fw-black mb-0 text-dark"><%= locals.stats?.todaysOrdersCount || 0 %> <span class="fs-6 text-muted fw-normal">فاتورة</span></h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3 fade-in-up delay-3">
+                <div class="stat-card" style="--card-accent: #8b5cf6;">
+                    <div class="stat-icon bg-info bg-opacity-10 text-info"><i class="fa-solid fa-cubes-stacked"></i></div>
+                    <div>
+                        <p class="text-muted small fw-bold mb-1">الأصناف المتاحة</p>
+                        <h3 class="fw-black mb-0 text-dark"><%= locals.stats?.productsCount || 0 %> <span class="fs-6 text-muted fw-normal">صنف</span></h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3 fade-in-up delay-4">
+                <div class="stat-card border-danger border-opacity-25" style="--card-accent: #ef4444; background: #fffafb;">
+                    <div class="stat-icon bg-danger bg-opacity-10 text-danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div>
+                        <p class="text-danger small fw-bold mb-1">نواقص المخزون</p>
+                        <h3 class="fw-black mb-0 text-danger"><%= locals.stats?.lowStockCount || 0 %> <span class="fs-6 text-danger opacity-75 fw-normal">منتج</span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8 fade-in-up delay-3">
+                <div class="dashboard-panel d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                        <h5 class="fw-black text-dark mb-0"><i class="fa-solid fa-chart-area text-primary me-2"></i>منحنى المبيعات (أخر 7 أيام)</h5>
+                        <span class="badge bg-light text-dark border px-3 py-2 fw-bold"><i class="fa-solid fa-circle text-success fs-xs me-1 animate-pulse"></i> مباشر</span>
+                    </div>
+                    <div class="flex-grow-1 position-relative" style="min-height: 250px;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 fade-in-up delay-4">
+                <div class="dashboard-panel bg-light border-0">
+                    <h5 class="fw-black text-dark mb-4"><i class="fa-solid fa-layer-group text-primary me-2"></i>مركز الإجراءات</h5>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <a href="/admin/pos" class="quick-action-btn shadow-sm">
+                                <i class="fa-solid fa-cash-register"></i>
+                                <span class="small">نقطة البيع (POS)</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="/admin/inventory" class="quick-action-btn shadow-sm">
+                                <i class="fa-solid fa-box-open text-success"></i>
+                                <span class="small">إدارة المخزون</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="/admin/users" class="quick-action-btn shadow-sm">
+                                <i class="fa-solid fa-user-shield text-warning"></i>
+                                <span class="small">صلاحيات الموظفين</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <button onclick="showReportsAlert()" class="quick-action-btn shadow-sm w-100 border-0">
+                                <i class="fa-solid fa-file-invoice-dollar text-info"></i>
+                                <span class="small">التقارير المالية</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-panel fade-in-up delay-4 mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-black text-dark mb-0"><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>أحدث العمليات المنفذة</h5>
+                <a href="/admin/pos" class="btn btn-sm btn-light fw-bold rounded-pill border shadow-sm transition-all hover-lift">عرض كل الفواتير <i class="fa-solid fa-arrow-left ms-1 fs-xs"></i></a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 custom-table">
+                    <thead class="bg-light text-muted small text-uppercase">
+                        <tr>
+                            <th class="ps-4 py-3 border-0 rounded-start-4">رقم الفاتورة</th>
+                            <th class="border-0">تاريخ ووقت التنفيذ</th>
+                            <th class="border-0">بواسطة</th>
+                            <th class="border-0">القيمة</th>
+                            <th class="border-0 rounded-end-4">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        <% if (locals.recentOrders && recentOrders.length > 0) { %>
+                            <% recentOrders.forEach(order => { %>
+                                <tr class="border-bottom">
+                                    <td class="ps-4 fw-bold text-primary"><i class="fa-solid fa-hashtag opacity-50 me-1"></i><%= order.orderNumber %></td>
+                                    <td class="text-dark small fw-bold">
+                                        <i class="fa-regular fa-clock text-muted me-1"></i> <%= new Date(order.createdAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) %>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="bg-secondary bg-opacity-10 text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 0.7rem;"><%= order.cashierName.charAt(0) %></div>
+                                            <span class="fw-bold small"><%= order.cashierName %></span>
+                                        </div>
+                                    </td>
+                                    <td class="fw-black text-dark"><%= order.totalAmount.toLocaleString('ar-EG') %> <span class="text-success small">ج.م</span></td>
+                                    <td><span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill border border-success border-opacity-25"><i class="fa-solid fa-check-circle me-1"></i>مكتملة</span></td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                        <i class="fa-solid fa-receipt fs-3 opacity-50"></i>
+                                    </div>
+                                    <h6 class="fw-bold">لا توجد مبيعات مسجلة حتى الآن.</h6>
+                                    <p class="small mb-0 opacity-75">قم بإنشاء فاتورة من نقطة البيع لتبدأ البيانات بالظهور هنا.</p>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // 1. توليد تحية ذكية والتاريخ الحالي
+        const hour = new Date().getHours();
+        const greeting = hour < 12 ? 'صباح الخير' : hour < 18 ? 'مساء الخير' : 'مساء الخير';
+        document.getElementById('timeGreeting').innerText = greeting;
+        
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('ar-EG', options);
+
+        // 2. توليد أسماء الأيام الحقيقية للرسم البياني
+        const dynamicDays = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            dynamicDays.push(d.toLocaleDateString('ar-EG', { weekday: 'short' }));
+        }
+
+        // 3. إعداد الرسم البياني الاحترافي
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(79, 70, 229, 0.4)'); 
+        gradient.addColorStop(1, 'rgba(79, 70, 229, 0.0)'); 
+
+        // 🔥 استقبال البيانات الحقيقية من السيرفر بشكل آمن 🔥
+        const salesData = <%- JSON.stringify(locals.weeklySalesData || [0, 0, 0, 0, 0, 0, 0]).replace(/</g, '\\u003c') %>;
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dynamicDays,
+                datasets: [{
+                    label: 'إيرادات المبيعات',
+                    data: salesData, // هنا يتم رسم البيانات الحقيقية
+                    borderColor: '#4f46e5',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#4f46e5',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.4 
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        padding: 12,
+                        titleFont: { size: 13, family: 'Inter' },
+                        bodyFont: { size: 14, weight: 'bold', family: 'Inter' },
+                        displayColors: false,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) { return 'الإيراد: ' + context.parsed.y + ' ج.م'; }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9', borderDash: [5, 5] },
+                        border: { display: false },
+                        ticks: { color: '#64748b', font: { weight: '600' } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false },
+                        ticks: { color: '#64748b', font: { weight: '600' } }
+                    }
+                },
+                interaction: { intersect: false, mode: 'index' }
+            }
+        });
+    });
+
+    // أزرار التفاعل (SweetAlert)
+    function exportReport() {
+        Swal.fire({
+            title: 'تصدير التقرير',
+            text: 'يتم الآن تجهيز بيانات مبيعات اليوم في ملف PDF/Excel...',
+            icon: 'info',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        });
+    }
+
+    function showReportsAlert() {
+        Swal.fire({
+            title: 'التقارير المالية',
+            text: 'جاري برمجة لوحة التقارير التحليلية المفصلة، ستكون متاحة قريباً!',
+            icon: 'working',
+            iconHtml: '⚙️',
+            confirmButtonColor: '#4f46e5',
+            confirmButtonText: 'حسناً'
+        });
+    }
+</script>
+
+<%- include('partials/footer') %>

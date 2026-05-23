@@ -1,0 +1,112 @@
+ /* =========================================
+       1. الإعدادات الأساسية والتجاوب
+       ========================================= */
+       body { background-color: #f4f7f9; }
+    
+       .pos-wrapper {
+           display: flex;
+           height: calc(100vh - 90px);
+           gap: 1.25rem;
+           transition: all 0.3s ease;
+       }
+   
+       @media (max-width: 1200px) {
+           .pos-wrapper { flex-direction: column; height: auto; overflow-y: visible; }
+           .cart-section { width: 100% !important; order: -1; height: 500px; }
+           .products-section { height: 700px; }
+       }
+   
+       /* =========================================
+          2. تصميم الكروت الاحترافي (Minimalist Cards)
+          ========================================= */
+       .products-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+           gap: 12px;
+       }
+   
+       .pos-card {
+           background: #ffffff;
+           border: 1px solid #eef2f6;
+           border-radius: 16px;
+           padding: 12px;
+           cursor: pointer;
+           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+           display: flex;
+           flex-direction: column;
+           justify-content: space-between;
+           height: 120px;
+           position: relative;
+           overflow: hidden;
+       }
+   
+       .pos-card:hover {
+           border-color: #6366f1;
+           box-shadow: 0 8px 20px rgba(99, 102, 241, 0.12);
+           transform: translateY(-3px);
+       }
+   
+       .pos-card:active { transform: scale(0.95); }
+   
+       .pos-card .card-price {
+           font-weight: 900;
+           color: #6366f1;
+           font-size: 1.1rem;
+       }
+   
+       .pos-card .card-title {
+           font-size: 0.85rem;
+           font-weight: 700;
+           color: #1e293b;
+           line-height: 1.3;
+           display: -webkit-box;
+           -webkit-line-clamp: 2;
+           -webkit-box-orient: vertical;
+           overflow: hidden;
+       }
+   
+       .pos-card .stock-indicator {
+           font-size: 0.7rem;
+           font-weight: 800;
+           padding: 2px 8px;
+           border-radius: 20px;
+           background: #f1f5f9;
+           color: #64748b;
+       }
+   
+       .pos-card .stock-indicator.low {
+           background: #fef2f2;
+           color: #ef4444;
+           animation: pulse 2s infinite;
+       }
+   
+       /* =========================================
+          3. تنسيقات الفاتورة (Cart UI)
+          ========================================= */
+       .cart-item-row {
+           background: #ffffff;
+           border: 1px solid #f1f5f9;
+           border-radius: 12px;
+           padding: 10px 12px;
+           margin-bottom: 8px;
+           transition: transform 0.2s;
+       }
+       .cart-item-row:hover { transform: translateX(-5px); border-color: #cbd5e1; }
+       
+       .qty-control {
+           background: #f8fafc;
+           border-radius: 50px;
+           padding: 2px;
+           border: 1px solid #e2e8f0;
+       }
+       
+       .qty-btn {
+           width: 24px; height: 24px;
+           border-radius: 50%;
+           border: none;
+           background: #ffffff;
+           color: #475569;
+           font-weight: bold;
+           display: flex; align-items: center; justify-content: center;
+           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+       }

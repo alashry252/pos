@@ -1,0 +1,414 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+<link rel="stylesheet" href="/css/inventory.css">
+<div class="main-content-wrapper">
+    <main class="container-fluid px-3 px-lg-5 py-4 fade-in-up">
+        
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom">
+            <div class="mb-3 mb-md-0">
+                <h3 class="fw-black text-dark mb-1 d-flex align-items-center gap-2">
+                    <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="fa-solid fa-boxes-stacked fs-5"></i>
+                    </div>
+                    المخزون والمنتجات
+                </h3>
+                <p class="text-muted small mb-0 ms-5" style="margin-right: 3.2rem;">إدارة المنتجات، تتبع الكميات، وتنبيهات النواقص</p>
+            </div>
+            <button class="btn btn-primary-gradient fw-bold px-4 py-2 rounded-pill shadow-sm d-flex align-items-center gap-2 hover-lift" data-bs-toggle="modal" data-bs-target="#productModal" onclick="resetProductForm()">
+                <i class="fa-solid fa-plus"></i> إدخال صنف جديد
+            </button>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-primary">
+                    <div class="card-body">
+                        <div class="text-muted small fw-bold mb-1">إجمالي الأصناف</div>
+                        <h3 class="fw-black mb-0"><%= stats.total %></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-success">
+                    <div class="card-body">
+                        <div class="text-muted small fw-bold mb-1">إجمالي قيمة المخزون</div>
+                        <h3 class="fw-black mb-0"><%= stats.totalValue.toLocaleString() %> <span class="fs-6 text-muted">ج.م</span></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-warning">
+                    <div class="card-body">
+                        <div class="text-muted small fw-bold mb-1">قاربت على النفاذ</div>
+                        <h3 class="fw-black text-warning mb-0"><%= stats.lowStock %></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-danger">
+                    <div class="card-body">
+                        <div class="text-muted small fw-bold mb-1">نواقص (نفذت الكمية)</div>
+                        <h3 class="fw-black text-danger mb-0"><%= stats.outOfStock %></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <input type="text" id="searchInput" class="form-control rounded-pill mb-3 w-50" placeholder="🔍 ابحث عن اسم منتج أو كود الصنف...">
+                    <table class="table table-hover align-middle mb-0 custom-table">
+                        <thead class="bg-light">
+                            <tr class="text-muted text-uppercase tracking-wide">
+                                <th class="py-3 ps-4 border-0">المنتج / كود الصنف</th>
+                                <th class="py-3 border-0">التصنيف</th>
+                                <th class="py-3 border-0">السعر</th>
+                                <th class="py-3 border-0">حالة المخزون</th>
+                                <th class="py-3 text-center pe-4 border-0">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody class="border-top-0">
+                            <% if (products.length === 0) { %>
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <div class="text-muted mb-3"><i class="fa-solid fa-box-open fs-1 opacity-25"></i></div>
+                                        <h6 class="fw-bold">المخزون فارغ تماماً</h6>
+                                        <p class="small text-muted">قم بإدخال بضاعتك الأولى للنظام.</p>
+                                    </td>
+                                </tr>
+                            <% } else { %>
+                                <% products.forEach(p => { %>
+                                    <tr>
+                                        <td class="ps-4 py-3">
+                                            <div class="fw-bold text-dark"><%= p.name %></div>
+                                            <div class="text-muted small font-monospace"><i class="fa-solid fa-barcode opacity-50 me-1"></i><%= p.sku %></div>
+                                        </td>
+                                        <td class="py-3"><span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1"><%= p.category %></span></td>
+                                        <td class="py-3 fw-bold text-success"><%= p.price %> ج.م</td>
+                                        <td class="py-3">
+                                            <% if (p.quantity === 0) { %>
+                                                <span class="badge bg-danger px-3 py-2 rounded-pill"><i class="fa-solid fa-xmark me-1"></i>نفذت الكمية</span>
+                                            <% } else if (p.quantity <= p.lowStockThreshold) { %>
+                                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i class="fa-solid fa-triangle-exclamation me-1"></i>منخفض (<%= p.quantity %>)</span>
+                                            <% } else { %>
+                                                <span class="badge bg-success px-3 py-2 rounded-pill"><i class="fa-solid fa-check me-1"></i>متوفر (<%= p.quantity %>)</span>
+                                            <% } %>
+                                        </td>
+                                        <td class="text-center pe-4 py-3">
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <button class="btn-action btn-edit shadow-sm" onclick="editProduct('<%= p._id %>', '<%= p.name %>', '<%= p.category %>', '<%= p.quantity %>', '<%= p.price %>', '<%= p.lowStockThreshold %>')" title="تعديل">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </button>
+                                                <button class="btn-action btn-delete shadow-sm" onclick="confirmDeleteProduct('<%= p._id %>')" title="حذف">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="bg-primary bg-gradient" style="height: 6px;"></div>
+            
+            <div class="modal-header border-bottom-0 p-4 pb-3">
+                <h5 class="modal-title fw-black d-flex align-items-center gap-3" id="modalTitle">
+                    <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px;">
+                        <i class="fa-solid fa-box-open fs-5"></i>
+                    </div>
+                    <span id="modalTitleText">إضافة صنف جديد</span>
+                </h5>
+                <button type="button" class="btn-close shadow-none bg-light rounded-circle p-2 transition-all hover-lift" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body p-4 pt-0">
+                <form id="productForm" action="/admin/inventory/create" method="POST" novalidate>
+                    
+                    <div class="bg-light bg-opacity-50 p-4 rounded-4 mb-4 border border-light-subtle transition-all hover-shadow-sm">
+                        <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-circle-info me-2"></i>البيانات الأساسية للمنتج</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">اسم المنتج <span class="text-danger">*</span></label>
+                                <div class="input-group shadow-sm rounded-3 overflow-hidden focus-ring-group">
+                                    <span class="input-group-text bg-white border-0 text-muted"><i class="fa-solid fa-tag"></i></span>
+                                    <input type="text" class="form-control border-0 bg-white shadow-none fw-medium" name="name" id="productName" placeholder="مثال: هاتف ذكي، حقيبة ظهر" required autocomplete="off">
+                                </div>
+                                <div class="invalid-feedback px-2 mt-1 small fw-bold">يرجى إدخال اسم المنتج بشكل صحيح</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">التصنيف <span class="text-danger">*</span></label>
+                                <div class="input-group shadow-sm rounded-3 overflow-hidden focus-ring-group">
+                                    <span class="input-group-text bg-white border-0 text-muted"><i class="fa-solid fa-layer-group"></i></span>
+                                    <input type="text" class="form-control border-0 bg-white shadow-none fw-medium" name="category" id="productCategory" placeholder="مثال: إلكترونيات، ملابس" required autocomplete="off">
+                                </div>
+                                <div class="invalid-feedback px-2 mt-1 small fw-bold">يرجى تحديد تصنيف المنتج</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-light bg-opacity-50 p-4 rounded-4 mb-4 border border-light-subtle transition-all hover-shadow-sm">
+                        <h6 class="fw-bold text-success mb-3"><i class="fa-solid fa-clipboard-list me-2"></i>التسجيل المالي والمخزني</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted">سعر البيع <span class="text-danger">*</span></label>
+                                <div class="input-group shadow-sm rounded-3 overflow-hidden focus-ring-group border border-success border-opacity-25">
+                                    <span class="input-group-text bg-success bg-opacity-10 border-0 text-success"><i class="fa-solid fa-money-bill-wave"></i></span>
+                                    <input type="number" class="form-control border-0 bg-success bg-opacity-10 fw-black text-success shadow-none fs-6" name="price" id="productPrice" placeholder="0" required min="0">
+                                    <span class="input-group-text bg-success bg-opacity-10 border-0 text-success small fw-bold">ج.م</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted">الكمية الحالية <span class="text-danger">*</span></label>
+                                <div class="input-group shadow-sm rounded-3 overflow-hidden focus-ring-group">
+                                    <span class="input-group-text bg-white border-0 text-primary"><i class="fa-solid fa-cubes"></i></span>
+                                    <input type="number" class="form-control border-0 bg-white fw-bold text-dark shadow-none fs-6" name="quantity" id="productQty" placeholder="0" required min="0">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted">تنبيه النواقص عند</label>
+                                <div class="input-group shadow-sm rounded-3 overflow-hidden focus-ring-group border border-warning border-opacity-50">
+                                    <span class="input-group-text bg-warning bg-opacity-10 border-0 text-warning"><i class="fa-solid fa-bell"></i></span>
+                                    <input type="number" class="form-control border-0 bg-warning bg-opacity-10 text-dark fw-bold shadow-none" name="lowStockThreshold" id="productThreshold" placeholder="5" required min="0" value="5" title="سيقوم النظام بتنبيهك عندما تصل الكمية لهذا الرقم">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary-gradient w-100 py-3 fw-bold rounded-pill shadow-sm transition-all hover-lift fs-6 mt-2" id="submitProductBtn">
+                        <span class="btn-text">حفظ بيانات المنتج <i class="fa-solid fa-check ms-2"></i></span>
+                        <div class="spinner-border spinner-border-sm text-light btn-loader d-none" role="status"></div>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ==========================================
+        // 1. تهيئة المتغيرات وعناصر الـ DOM
+        // ==========================================
+        const productForm = document.getElementById('productForm');
+        const modalEl = document.getElementById('productModal');
+        const productModal = new bootstrap.Modal(modalEl);
+        const submitProductBtn = document.getElementById('submitProductBtn');
+        const modalTitleText = document.getElementById('modalTitleText');
+        const modalIcon = document.querySelector('#modalTitle i');
+        
+        // الحقول
+        const nameInput = document.getElementById('productName');
+        const categoryInput = document.getElementById('productCategory');
+        const priceInput = document.getElementById('productPrice');
+        const qtyInput = document.getElementById('productQty');
+        const thresholdInput = document.getElementById('productThreshold');
+        
+        let isEditProductMode = false;
+
+        // ==========================================
+        // 2. تجربة المستخدم المتقدمة (UX Enhancements)
+        // ==========================================
+        
+        // التركيز التلقائي عند فتح النافذة
+        modalEl.addEventListener('shown.bs.modal', function () {
+            nameInput.focus();
+        });
+
+        // تنظيف الواجهة عند الإغلاق
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            resetProductForm();
+        });
+
+        // منع إدخال الحروف وعلامة السالب (-) في حقول الأرقام
+        const preventNegative = (e) => {
+            if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                e.preventDefault();
+            }
+        };
+        priceInput.addEventListener('keydown', preventNegative);
+        qtyInput.addEventListener('keydown', preventNegative);
+        thresholdInput.addEventListener('keydown', preventNegative);
+
+        // ==========================================
+        // 3. محرك البحث الحي للجدول (Live Search Filter)
+        // ==========================================
+        // (تأكد من إضافة حقل بحث input id="searchInput" في صفحة الـ HTML أعلى الجدول إن أردت استخدامه)
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const filter = this.value.toLowerCase();
+                const rows = document.querySelectorAll('.custom-table tbody tr');
+                
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(filter) ? '' : 'none';
+                });
+            });
+        }
+
+        // ==========================================
+        // 4. قلب النظام: الإرسال عبر AJAX الذكي (Smart Form Submit)
+        // ==========================================
+        productForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // إزالة أي علامات خطأ سابقة
+            productForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+            // التحقق الأساسي (HTML5)
+            if (!productForm.checkValidity()) {
+                productForm.classList.add('was-validated');
+                return;
+            }
+
+            // التحقق المنطقي الإضافي (Business Logic)
+            if (parseFloat(priceInput.value) <= 0) {
+                priceInput.classList.add('is-invalid');
+                Swal.fire('خطأ في الإدخال', 'لا يمكن أن يكون سعر المنتج صفراً أو أقل.', 'warning');
+                return;
+            }
+
+            // تجميد الزر وتفعيل الـ Loader
+            submitProductBtn.classList.add('btn-loading');
+            submitProductBtn.querySelector('.btn-loader').classList.remove('d-none');
+            submitProductBtn.querySelector('.btn-text').classList.add('opacity-50');
+            submitProductBtn.disabled = true;
+
+            try {
+                const formData = new FormData(productForm);
+                const data = Object.fromEntries(formData);
+
+                const response = await fetch(productForm.action, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    // ❌ في حالة رفض السيرفر: تحديد الخطأ بصرياً وعدم إغلاق النافذة
+                    submitProductBtn.classList.remove('btn-loading');
+                    submitProductBtn.querySelector('.btn-loader').classList.add('d-none');
+                    submitProductBtn.querySelector('.btn-text').classList.remove('opacity-50');
+                    submitProductBtn.disabled = false;
+                    
+                    // التلوين الذكي للخطأ
+                    if (result.message.includes('اسم')) nameInput.classList.add('is-invalid');
+                    if (result.message.includes('كود')) nameInput.classList.add('is-invalid');
+
+                    Swal.fire({
+                        title: 'تنبيه من النظام',
+                        text: result.message,
+                        icon: 'error',
+                        confirmButtonColor: '#ef4444',
+                        customClass: { confirmButton: 'rounded-pill px-4 fw-bold' }
+                    });
+                } else {
+                    // ✅ في حالة النجاح: إغلاق ناعم ورسالة نجاح
+                    productModal.hide();
+                    Swal.fire({
+                        title: 'عملية ناجحة',
+                        text: result.message,
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => window.location.reload());
+                }
+            } catch (error) {
+                submitProductBtn.disabled = false;
+                submitProductBtn.classList.remove('btn-loading');
+                Swal.fire('خطأ بالشبكة', 'فشل الاتصال بالخادم، تأكد من الإنترنت.', 'error');
+            }
+        });
+
+        // ==========================================
+        // 5. وظيفة إعادة التهيئة (إضافة منتج جديد)
+        // ==========================================
+        window.resetProductForm = function() {
+            isEditProductMode = false;
+            productForm.action = '/admin/inventory/create';
+            productForm.reset();
+            productForm.classList.remove('was-validated');
+            productForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            
+            modalTitleText.innerText = 'إضافة صنف جديد';
+            modalIcon.className = 'fa-solid fa-box-open';
+            submitProductBtn.querySelector('.btn-text').innerHTML = 'إدخال للمخزون <i class="fa-solid fa-check ms-1"></i>';
+            
+            // قيم افتراضية ذكية
+            thresholdInput.value = 5; 
+            qtyInput.value = 0;
+        };
+
+        // ==========================================
+        // 6. وظيفة تجهيز النافذة للتعديل (Edit Product)
+        // ==========================================
+        window.editProduct = function(id, name, category, quantity, price, threshold) {
+            resetProductForm(); // تنظيف أولاً
+            isEditProductMode = true;
+            
+            productForm.action = `/admin/inventory/update/${id}`;
+            nameInput.value = name;
+            categoryInput.value = category;
+            qtyInput.value = quantity;
+            priceInput.value = price;
+            thresholdInput.value = threshold;
+            
+            modalTitleText.innerText = 'تعديل بيانات الصنف';
+            modalIcon.className = 'fa-solid fa-pen-to-square';
+            submitProductBtn.querySelector('.btn-text').innerHTML = 'تحديث البيانات <i class="fa-solid fa-arrows-rotate ms-1"></i>';
+            
+            productModal.show();
+        };
+
+        // ==========================================
+        // 7. الحذف الآمن مع الـ AJAX
+        // ==========================================
+        window.confirmDeleteProduct = function(id) {
+            Swal.fire({
+                title: 'هل تريد حذف الصنف؟',
+                text: 'لن تتمكن من التراجع عن هذا الإجراء، وسيتم مسح الصنف نهائياً.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#cbd5e1',
+                confirmButtonText: 'نعم، احذف',
+                cancelButtonText: 'تراجع',
+                reverseButtons: true,
+                customClass: { confirmButton: 'rounded-pill px-4 fw-bold', cancelButton: 'rounded-pill px-4 fw-bold text-dark' }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'جاري مسح البيانات...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                    try {
+                        const response = await fetch(`/admin/inventory/delete/${id}`, { method: 'GET' });
+                        const data = await response.json();
+                        
+                        if (response.ok && data.success) {
+                            Swal.fire({ icon: 'success', title: 'تم الحذف بنجاح', timer: 1500, showConfirmButton: false }).then(() => window.location.reload());
+                        } else {
+                            Swal.fire('تنبيه', data.message, 'warning');
+                        }
+                    } catch (error) {
+                        Swal.fire('خطأ بالشبكة', 'فشل الاتصال بالخادم.', 'error');
+                    }
+                }
+            });
+        };
+    });
+</script>
+
+<%- include('../partials/footer') %>

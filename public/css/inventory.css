@@ -1,0 +1,157 @@
+/* =========================================
+   تنسيقات شاشة إدارة المخزون (Inventory Pro)
+   ========================================= */
+
+/* 1. حركة ظهور الصفحة الناعمة */
+.fade-in-up {
+    animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(25px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 2. بطاقات الإحصائيات (Stats Cards) - تأثير الرفع الناعم */
+.stat-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 1rem;
+}
+.stat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 3. شريط البحث الحي (Live Search Bar) */
+.search-container {
+    position: relative;
+    max-width: 450px;
+    width: 100%;
+}
+.search-container .search-icon {
+    position: absolute;
+    right: 18px; /* في اليمين لأننا RTL */
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    transition: color 0.3s ease;
+}
+.search-container .search-input {
+    padding-right: 2.8rem; /* مساحة للأيقونة */
+    border-radius: 50px;
+    border: 1px solid #e2e8f0;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    background-color: #f8fafc;
+}
+.search-container .search-input:focus {
+    background-color: #ffffff;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    outline: none;
+}
+.search-container .search-input:focus + .search-icon {
+    color: #6366f1; /* تلوين الأيقونة عند الكتابة */
+}
+
+/* 4. الأزرار الاحترافية (Gradient Buttons) */
+.btn-primary-gradient {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+.hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* 5. تصميم جدول المخزون (Modern Data Table) */
+.custom-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.custom-table th {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background-color: #f8fafc;
+    border-bottom: 2px solid #e2e8f0 !important;
+    text-transform: uppercase;
+    color: #64748b;
+}
+.custom-table td {
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.2s ease;
+}
+.custom-table tbody tr {
+    transition: all 0.2s ease;
+}
+.custom-table tbody tr:hover {
+    background-color: #f8fafc;
+    transform: scale(1.001); /* تأثير تكبير غير ملحوظ يعطي إحساساً بالتفاعل */
+}
+
+/* 6. أزرار الإجراءات في الجدول (Actions) */
+.btn-action {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #f1f5f9;
+    border: none;
+    color: #64748b;
+}
+.btn-edit { color: #6366f1; }
+.btn-edit:hover { 
+    background: #6366f1; 
+    color: white; 
+    transform: scale(1.1) translateY(-2px); 
+    box-shadow: 0 5px 15px rgba(99, 102, 241, 0.2);
+}
+.btn-delete { color: #ef4444; }
+.btn-delete:hover { 
+    background: #ef4444; 
+    color: white; 
+    transform: scale(1.1) translateY(-2px); 
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.2);
+}
+
+/* 7. الحقول العائمة داخل الـ Modal (Floating Labels) */
+.form-floating > .form-control {
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+.form-floating > .form-control:focus,
+.form-floating > .form-select:focus {
+    border-color: #6366f1;
+    background-color: #fff !important;
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.08) !important;
+}
+.form-floating > .form-control:focus ~ label, 
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: #6366f1;
+    font-weight: 700;
+}
+
+/* 8. تأثير تحميل الزر (Loader) */
+.btn-loader {
+    width: 1.2rem; height: 1.2rem;
+    border-width: 2px;
+}
+/* تأثيرات التركيز على المجموعات (Input Groups Focus) */
+.focus-ring-group {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+.focus-ring-group:focus-within {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+}
+.hover-shadow-sm:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}

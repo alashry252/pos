@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    
+    <!-- استيراد Bootstrap 5.3.3 RTL و FontAwesome 6.5.2 عبر الـ CDN لضمان التوافق التام وسرعة التحميل -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" integrity="sha384-dpuaG1suU0eT09tx5plTaGMLBsfDLzUCCUXOY2j/LSvXYuG6Bqs43ALlhIqAJVRb" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+
+    <div class="bg-mesh"></div>
+    <div class="glow-orb orb-primary"></div>
+    <div class="glow-orb orb-secondary"></div>
+
+    <div class="premium-card text-center mx-3">
+        <div class="brand-logo">
+            <i class="fa-solid fa-rocket"></i>
+        </div>
+        <h2 class="fw-black mb-2 text-white">YM-CampaignHub</h2>
+        <p class="text-muted small mb-4 pb-2" style="color: #94a3b8 !important;">مرحباً بك مجدداً. قم بتسجيل الدخول للمتابعة.</p>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger small py-2 px-3 fw-bold text-start fade show rounded-3 mb-4" role="alert">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i> <%= error %>
+            </div>
+        <% } %>
+
+        <form id="loginForm" action="/auth/login" method="POST">
+            
+            <div class="input-group-custom text-start">
+                <i class="fa-solid fa-at input-icon"></i>
+                <input type="text" class="form-control" id="username" name="username" placeholder=" " required autocomplete="username">
+                <label for="username" class="floating-label">اسم المستخدم أو البريد</label>
+            </div>
+            
+            <div class="input-group-custom text-start">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input type="password" class="form-control" id="password" name="password" placeholder=" " required autocomplete="current-password">
+                <label for="password" class="floating-label">كلمة المرور</label>
+                <i class="fa-regular fa-eye toggle-password" id="togglePasswordIcon" title="إظهار/إخفاء"></i>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2">
+                <div class="form-check custom-checkbox">
+                    <input class="form-check-input shadow-none" type="checkbox" id="rememberMe" name="rememberMe">
+                    <label class="form-check-label" for="rememberMe">تذكرني دائماً</label>
+                </div>
+                <a href="#" class="text-decoration-none small fw-bold" style="color: #818cf8;">نسيت الرمز؟</a>
+            </div>
+
+            <button type="submit" class="btn-magic" id="submitBtn">
+                <span class="btn-text">تسجيل الدخول</span>
+                <i class="fa-solid fa-arrow-left ms-2 btn-icon"></i>
+                <div class="spinner-border text-light btn-loader" role="status"></div>
+            </button>
+            
+        </form>
+    </div>
+
+    <script src="/js/login.js"></script>
+</body>
+</html>
