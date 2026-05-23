@@ -14,6 +14,9 @@ dotenv.config();
 
 const app = express();
 
+// 🌐 تفعيل الثقة في البروكسي (مهم جداً لـ Vercel ولتجنب خطأ express-rate-limit)
+app.set('trust proxy', 1);
+
 // إعداد محرك قوالب الواجهة EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -60,7 +63,9 @@ mongoose.connect(process.env.MONGO_URI)
     .catch(err => {
         console.error('❌ Failed to connect to MongoDB:', err.message);
         console.log('💡 تأكد من تشغيل خدمة MongoDB على جهازك (Localhost).');
-        process.exit(1); // إغلاق الخادم فوراً في حال فشل الاتصال لحماية النظام
+        if (process.env.NODE_ENV !== 'production') {
+            process.exit(1); // إغلاق الخادم فوراً في التطوير فقط لحماية النظام
+        }
     });
 
 // ==========================================
