@@ -44,7 +44,8 @@ app.use(helmet({ contentSecurityPolicy: false }));
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 دقيقة
     max: 50, // أقصى عدد طلبات من نفس الـ IP
-    message: 'تم تجاوز الحد المسموح من الطلبات، يرجى المحاولة لاحقاً.'
+    message: 'تم تجاوز الحد المسموح من الطلبات، يرجى المحاولة لاحقاً.',
+    validate: { trustProxy: false } // تعطيل التحقق من البروكسي لتجنب أخطاء Vercel Serverless
 });
 app.use('/auth', loginLimiter);
 
