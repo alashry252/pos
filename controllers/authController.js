@@ -3,9 +3,18 @@ const jwt = require('jsonwebtoken');
 
 // عرض صفحة تسجيل الدخول
 exports.getLoginPage = (req, res) => {
-    // إذا كان المستخدم مسجل دخوله بالفعل، نوجهه للوحة القيادة فوراً
+    // إذا كان المستخدم مسجل دخوله بالفعل، نوجهه للصفحة المناسبة لدوره فوراً
     if (req.cookies.token) {
-        return res.redirect('/dashboard');
+        try {
+            const decoded = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
+            if (decoded.role === 'admin') {
+                return res.redirect('/dashboard');
+            } else {
+                return res.redirect('/admin/pos');
+            }
+        } catch (e) {
+            res.clearCookie('token');
+        }
     }
     res.render('login', { title: 'تسجيل الدخول | YM-CampaignHub', error: null });
 };
@@ -41,8 +50,21 @@ exports.login = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000 // مدة بقاء الكوكي (يوم واحد بالمللي ثانية)
         });
 
-        // 5. توجيه المستخدم بنجاح إلى لوحة القيادة
-        res.redirect('/dashboard');
+        // 🛡️ توثيق عملية تسجيل الدخول بسجل النشاطات التاريخي
+        const ActivityLog = require('../models/ActivityLog');
+        await ActivityLog.create({
+            userId: user._id,
+            userName: user.name,
+            action: 'تسجيل دخول',
+            details: `تم تسجيل دخول الموظف بنجاح إلى شاشة ${user.role === 'admin' ? 'لوحة القيادة' : 'نقاط البيع'}`
+        });
+
+        // 5. توجيه المستخدم بنجاح إلى لوحة القيادة أو شاشة نقاط البيع
+        if (user.role === 'admin') {
+            res.redirect('/dashboard');
+        } else {
+            res.redirect('/admin/pos');
+        }
 
     } catch (error) {
         console.error('Login Error:', error);
@@ -50,8 +72,21 @@ exports.login = async (req, res) => {
     }
 };
 
-// دالة تسجيل الخروج
-exports.logout = (req, res) => {
+// دالة تسجيل الخروج (مؤمنة وتوثق العملية في سجل النشاطات)
+exports.logout = async (req, res) => {
+    try {
+        const ActivityLog = require('../models/ActivityLog');
+        if (req.user) {
+            await ActivityLog.create({
+                userId: req.user.id,
+                userName: req.user.name,
+                action: 'تسجيل خروج',
+                details: `تم تسجيل خروج الموظف من النظام بأمان`
+            });
+        }
+    } catch (error) {
+        console.error('Logout logging error:', error);
+    }
     res.clearCookie('token'); // مسح الكوكي
     res.redirect('/auth/login');
 };

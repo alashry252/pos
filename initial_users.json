@@ -1,0 +1,15 @@
+[
+  {
+    "_id": "6a122b1e7ff113b8171e527f",
+    "name": "مدير النظام",
+    "username": "admin",
+    "password": "$2b$12$jOhZn/HTHl3nxM0b7Au19uBanjKhsITgV/57P1Ejx9FEPzmCSHCwy",
+    "role": "admin",
+    "isActive": true,
+    "createdAt": "2026-05-23T22:33:02.929Z",
+    "updatedAt": "2026-05-23T22:33:02.929Z",
+    "accountId": "2314928652",
+    "normalizedName": "مدير النظام",
+    "__v": 0
+  }
+]

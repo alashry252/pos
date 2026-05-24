@@ -1,0 +1,196 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<link rel="stylesheet" href="/css/users.css">
+
+<style>
+    /* تنسيقات إضافية مخصصة لصفحة التعديل المنفصلة لتكون غاية في الجمال والاحترافية */
+    .form-card {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+        border-radius: 1.5rem;
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+    }
+    .form-header-gradient {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        padding: 2rem;
+        color: white;
+        position: relative;
+    }
+    .form-header-gradient::before {
+        content: ''; position: absolute; top: -50%; right: -10%;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%; filter: blur(15px);
+    }
+</style>
+
+<div class="main-content-wrapper">
+    <main class="container py-5 fade-in-up">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
+                
+                <!-- زر رجوع للخلف بلمسة راقية -->
+                <div class="mb-4">
+                    <a href="/admin/employees" class="btn btn-light rounded-pill fw-bold border px-3 py-2 transition-all hover-lift d-inline-flex align-items-center gap-2">
+                        <i class="fa-solid fa-arrow-right fs-6"></i> العودة لجدول الموظفين
+                    </a>
+                </div>
+
+                <!-- كرت التعديل الذكي -->
+                <div class="form-card">
+                    <div class="form-header-gradient d-flex align-items-center gap-3">
+                        <div class="bg-white bg-opacity-20 text-white p-3 rounded-4 d-flex align-items-center justify-content-center shadow-sm" style="width: 56px; height: 56px;">
+                            <i class="fa-solid fa-user-gear fs-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-black mb-1 text-white">تعديل بيانات وصلاحيات الموظف</h4>
+                            <p class="mb-0 text-white-50 small">قم بتحديث الاسم الكامل للموظف أو تغيير صلاحياته وتعيينه داخل النظام</p>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5">
+                        <form id="userForm" action="/admin/employees/update/<%= employee._id %>" method="POST" novalidate>
+                            
+                            <!-- القسم الأول: البيانات الشخصية -->
+                            <h6 class="text-primary fw-black mb-4 d-flex align-items-center gap-2">
+                                <span class="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-2 small">١</span> البيانات الأساسية للموظف
+                            </h6>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6 form-floating">
+                                    <input type="text" class="form-control rounded-3 bg-light border-0 shadow-none" name="name" id="userNameInput" placeholder="الاسم بالكامل" required autocomplete="off" value="<%= employee.name %>">
+                                    <label for="userNameInput" class="text-muted ms-2">الاسم بالكامل للموظف</label>
+                                    <div class="invalid-feedback small fw-bold px-2">الاسم بالكامل مطلوب*</div>
+                                </div>
+                                
+                                <div class="col-md-6 form-floating">
+                                    <input type="text" class="form-control rounded-3 bg-secondary bg-opacity-10 border-0 shadow-none text-start text-muted" dir="ltr" name="username" id="userUsernameInput" placeholder="اسم المستخدم" required autocomplete="off" value="<%= employee.username %>" readonly style="cursor: not-allowed;">
+                                    <label for="userUsernameInput" class="text-muted ms-2">اسم المستخدم (غير قابل للتعديل)</label>
+                                </div>
+                            </div>
+
+                            <!-- درع التنبيه الأمني لمنع التلاعب بالحسابات -->
+                            <div class="alert alert-warning border-warning border-opacity-25 bg-warning bg-opacity-10 p-3 rounded-3 mb-4 d-flex gap-2 align-items-start">
+                                <i class="fa-solid fa-shield-halved text-warning mt-1 fs-5"></i>
+                                <small class="fw-bold text-warning-emphasis lh-sm">
+                                    إجراء أمني صارم: لا يمكن تعديل كلمة المرور أو اسم المستخدم للموظف من هذه الشاشة لحماية الهويات الرقمية ومنع التلاعب بسجلات المبيعات التاريخية المرتبطة بهذا الحساب.
+                                </small>
+                            </div>
+
+                            <!-- القسم الثاني: الصلاحيات وتعيين الدور -->
+                            <h6 class="text-primary fw-black mb-4 d-flex align-items-center gap-2">
+                                <span class="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-2 small">٢</span> تعديل الدور والصلاحية
+                            </h6>
+
+                            <div class="form-floating mb-4">
+                                <select class="form-select rounded-3 bg-light border-0 shadow-none fw-bold" name="role" id="userRoleInput" required>
+                                    <option value="agent" <%= employee.role === 'agent' ? 'selected' : '' %>>كاشير / موظف مبيعات (Cashier)</option>
+                                    <option value="admin" <%= employee.role === 'admin' ? 'selected' : '' %>>مدير النظام / مسؤول مالي (Manager)</option>
+                                </select>
+                                <label for="userRoleInput" class="text-muted">تحديد الصلاحية والتعيين</label>
+                                <div class="invalid-feedback small fw-bold px-2">يجب اختيار دور الموظف وتعيينه*</div>
+                            </div>
+
+                            <hr class="my-4 opacity-10">
+
+                            <!-- أزرار الإجراءات الفخمة -->
+                            <div class="d-flex flex-column flex-md-row gap-3">
+                                <button type="submit" class="btn btn-primary-gradient flex-grow-1 py-3 fw-bold rounded-pill shadow-sm transition-all hover-lift" id="submitBtn">
+                                    <span class="btn-text">حفظ التغييرات وتحديث التعيين <i class="fa-solid fa-arrows-rotate ms-1"></i></span>
+                                    <div class="spinner-border spinner-border-sm text-light btn-loader" role="status"></div>
+                                </button>
+                                <a href="/admin/employees" class="btn btn-light border py-3 px-4 fw-bold rounded-pill shadow-xs transition-all hover-lift text-center">
+                                    تراجع
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const userForm = document.getElementById('userForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const nameInput = document.getElementById('userNameInput');
+        const roleInput = document.getElementById('userRoleInput');
+        
+        nameInput.focus();
+
+        // ==========================================
+        // الإرسال عبر AJAX وتحديث البيانات
+        // ==========================================
+        userForm.addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+            
+            userForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+            if (!userForm.checkValidity()) {
+                userForm.classList.add('was-validated');
+                return;
+            }
+            
+            submitBtn.classList.add('btn-loading');
+            submitBtn.disabled = true;
+
+            try {
+                // نأخذ الاسم والدور فقط للتحديث
+                const data = {
+                    name: nameInput.value,
+                    role: roleInput.value
+                };
+
+                const response = await fetch(userForm.action, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    submitBtn.classList.remove('btn-loading');
+                    submitBtn.disabled = false;
+
+                    if (result.message.includes('هذا الاسم مسجل')) {
+                        nameInput.classList.add('is-invalid');
+                        nameInput.focus();
+                    }
+
+                    Swal.fire({
+                        title: 'تنبيه من النظام',
+                        text: result.message,
+                        icon: 'error',
+                        confirmButtonColor: '#ef4444',
+                        confirmButtonText: 'تعديل البيانات',
+                        customClass: { confirmButton: 'rounded-pill px-4 fw-bold' }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'تم تحديث التعيين',
+                        text: result.message,
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = '/admin/employees';
+                    });
+                }
+            } catch (error) {
+                submitBtn.classList.remove('btn-loading');
+                submitBtn.disabled = false;
+                Swal.fire('خطأ بالشبكة', 'تعذر الاتصال بالخادم، يرجى التأكد من اتصالك بالإنترنت.', 'error');
+            }
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

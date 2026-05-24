@@ -27,31 +27,45 @@ const validateObjectId = (req, res, next) => {
 //  حماية شاملة لجميع مسارات لوحة التحكم
 // أي مسار تحت هذا السطر يتطلب تسجيل دخول + صلاحية أدمن
 // ==========================================
+// ==========================================
+//  حماية شاملة لجميع مسارات لوحة التحكم
+// أي مسار تحت هذا السطر يتطلب تسجيل دخول
+// ==========================================
 router.use(requireAuth);
+
+// -------------------------------------------------------------
+// 1. مسارات مشتركة (متاحة للأدمن وموظف الكاشير Agent)
+// -------------------------------------------------------------
+router.get('/pos', inventoryController.getPOSPage); // عرض صفحة الكاشير
+router.post('/pos/process', inventoryController.processOrder); // إتمام الطلب
+router.post('/pos/refund/:id', validateObjectId, inventoryController.refundOrder); // تسجيل المرتجع (مسموح للكاشير تسجيلها)
+router.get('/inventory', inventoryController.getInventoryPage); // عرض صفحة المخزون للمراقبة
+router.get('/settings', adminController.getSettingsPage); // عرض صفحة الإعدادات الشخصية والملف
+router.post('/settings/update', adminController.updateSettings); // معالجة تحديث البيانات الشخصية
+
+// -------------------------------------------------------------
+// 2. مسارات محمية بالأدمن فقط (Admins Only)
+// أي مسار تحت هذا السطر يتطلب صلاحيات أدمن كاملة
+// -------------------------------------------------------------
 router.use(authorizeAdmin);
 
-// ==========================================
-//  مسارات إدارة المستخدمين والصلاحيات (Users)
-// ==========================================
-router.get('/users', adminController.getUsersPage);
-router.post('/users/create', adminController.createUser);
-
-// نضع validateObjectId هنا لأن الرابط يحتوي على Params (:id)
-router.post('/users/update/:id', validateObjectId, adminController.updateUser);
-router.get('/users/delete/:id', validateObjectId, adminController.deleteUser);
-// مسار لوحة القيادة الرئيسية
+// لوحة القيادة
 router.get('/dashboard', adminController.getDashboard);
-// ==========================================
-//  مسارات إدارة المخزون والمنتجات (Inventory)
-// ==========================================
-router.get('/inventory', inventoryController.getInventoryPage);
-router.post('/inventory/create', inventoryController.createProduct);
 
-// نضع validateObjectId هنا أيضاً لحماية عمليات المخزون
+// التقارير المالية والرقابة الشاملة للمدير
+router.get('/reports', adminController.getReportsPage);
+
+// إدارة الموظفين والتعيين (Employees)
+router.get('/employees', adminController.getUsersPage);
+router.get('/employees/new', adminController.getCreateEmployeePage); // صفحة تعيين موظف جديد منفصلة
+router.get('/employees/edit/:id', validateObjectId, adminController.getEditEmployeePage); // صفحة تعديل تعيين موظف منفصلة
+router.post('/employees/create', adminController.createUser);
+router.post('/employees/update/:id', validateObjectId, adminController.updateUser);
+router.get('/employees/delete/:id', validateObjectId, adminController.deleteUser);
+
+// إدارة وتعديل المخزون (إضافة، تعديل، حذف المنتجات)
+router.post('/inventory/create', inventoryController.createProduct);
 router.post('/inventory/update/:id', validateObjectId, inventoryController.updateProduct);
 router.get('/inventory/delete/:id', validateObjectId, inventoryController.deleteProduct);
-
-router.get('/pos', inventoryController.getPOSPage); // عرض صفحة الكاشير
-router.post('/pos/process', inventoryController.processOrder);
 
 module.exports = router;

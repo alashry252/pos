@@ -112,16 +112,29 @@ exports.getPOSPage = async (req, res) => {
     try {
         const products = await Product.find({ quantity: { $gt: 0 } }).sort({ name: 1 });
         
-        // 🛡️ جلب أحدث 50 فاتورة من قاعدة البيانات لكي تظهر في الكاشير
-        const orders = await Order.find().sort({ createdAt: -1 }).limit(50);
+        // 🛡️ فلترة ذكية لـ "الفواتير السابقة" بناءً على دور المستخدم
+        let query = {};
+        if (req.user.role !== 'admin') {
+            // الكاشير (Agent) يرى فقط فواتيره هو الشخصية التي تمت اليوم
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // بداية اليوم الحالي
+            query = {
+                cashierId: req.user.id,
+                createdAt: { $gte: today }
+            };
+        }
+        
+        // جلب أحدث 50 فاتورة تطابق الفلترة الأمنية
+        const orders = await Order.find(query).sort({ createdAt: -1 }).limit(50);
         
         res.render('admin/pos', {
             title: 'نقطة البيع الذكية | Nexus POS',
             user: req.user,
             products,
-            orders // 👈 تمرير الفواتير الحقيقية للواجهة
+            orders // 👈 تمرير الفواتير المفلترة للواجهة
         });
     } catch (error) {
+        console.error('getPOSPage error:', error);
         res.status(500).send('عذراً، حدث خطأ أثناء تشغيل شاشة الكاشير.');
     }
 };
@@ -134,8 +147,20 @@ exports.getPOSPage = async (req, res) => {
 // ==========================================
 exports.processOrder = async (req, res) => {
     try {
-        // استقبال الخصم وطريقة الدفع من الكاشير
-        const { cart, paymentMethod, discount, subTotal, totalAmount } = req.body;
+        // استقبال الحقول المالية الجديدة وطريقة ونوع الطلب من الكاشير
+        const { 
+            cart, 
+            paymentMethod, 
+            orderType,
+            discount, 
+            serviceCharge, 
+            vat, 
+            deliveryFee, 
+            customerPaid, 
+            customerChange, 
+            subTotal, 
+            totalAmount 
+        } = req.body;
 
         if (!cart || cart.length === 0) {
             return res.status(400).json({ success: false, message: 'السلة فارغة، لا يمكن إتمام البيع.' });
@@ -170,6 +195,12 @@ exports.processOrder = async (req, res) => {
             items: orderItems,
             subTotal,
             discount,
+            serviceCharge,
+            vat,
+            deliveryFee,
+            customerPaid,
+            customerChange,
+            orderType,
             paymentMethod,
             totalAmount,
             cashierId: req.user.id,
@@ -182,17 +213,90 @@ exports.processOrder = async (req, res) => {
             userId: req.user.id,
             userName: req.user.name,
             action: 'عملية بيع جديدة',
-            details: `تم إصدار فاتورة (${paymentMethod}) بقيمة ${totalAmount} ج.م`
+            details: `تم إصدار فاتورة (${paymentMethod} - ${orderType}) بقيمة ${totalAmount} ج.م`
         });
 
         res.status(200).json({ 
             success: true, 
             message: 'تمت عملية البيع بنجاح وتحديث المخزون!',
-            orderId: newOrder._id 
+            orderId: newOrder._id,
+            order: newOrder
         });
 
     } catch (error) {
         console.error('POS Error:', error);
         res.status(500).json({ success: false, message: 'فشل في معالجة الطلب، يرجى المحاولة لاحقاً.' });
+    }
+};
+
+// ==========================================
+// 3. تسجيل وإرجاع الفاتورة (المرتجع)
+// ==========================================
+exports.refundOrder = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        
+        // 1. جلب الفاتورة من قاعدة البيانات
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'عذراً، الفاتورة غير موجودة.' });
+        }
+
+        // 🛡️ حماية أمنية إضافية: الكاشير لا يمكنه إرجاع فاتورة ليست له أو ليست من مبيعات اليوم
+        if (req.user.role !== 'admin') {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const isOwnOrder = order.cashierId && order.cashierId.toString() === req.user.id.toString();
+            const isToday = order.createdAt >= today;
+            if (!isOwnOrder || !isToday) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'إجراء غير مصرح: لا يمكنك إرجاع فواتير موظفين آخرين أو فواتير من أيام سابقة.' 
+                });
+            }
+        }
+
+        // 2. التحقق من عدم تكرار عملية المرتجع
+        if (order.status === 'refunded') {
+            return res.status(400).json({ success: false, message: 'هذه الفاتورة تم إرجاعها مسبقاً.' });
+        }
+
+        // 3. إرجاع الكميات للمخزن مع التحقق الفردي لكل منتج
+        for (const item of order.items) {
+            if (item.productId) {
+                const productExists = await Product.findById(item.productId);
+                if (productExists) {
+                    await Product.findByIdAndUpdate(item.productId, { 
+                        $inc: { quantity: item.quantity } 
+                    });
+                }
+            }
+        }
+
+        // 4. تحديث حالة الفاتورة وتوثيق بيانات الكاشير الذي قام بالإرجاع وتاريخه
+        order.status = 'refunded';
+        order.refundedAt = new Date();
+        order.refundedBy = req.user.id;
+        order.refundedByName = req.user.name;
+        
+        await order.save();
+
+        // 5. تسجيل العملية في سجل النشاطات العام
+        await ActivityLog.create({
+            userId: req.user.id,
+            userName: req.user.name,
+            action: 'تسجيل مرتجع',
+            details: `تم تسجيل مرتجع للفاتورة رقم (${order.orderNumber}) بقيمة ${order.totalAmount} ج.م بواسطة ${req.user.name}`
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'تم تسجيل المرتجع بنجاح واسترداد الكميات للمخزن!',
+            order
+        });
+
+    } catch (error) {
+        console.error('Refund Error:', error);
+        res.status(500).json({ success: false, message: 'فشل في عملية إرجاع الفاتورة، يرجى المحاولة لاحقاً.' });
     }
 };

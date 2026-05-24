@@ -9,8 +9,8 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 
-// تحميل المتغيرات البيئية من ملف .env
-dotenv.config();
+// تحميل المتغيرات البيئية من ملف .env بأمان ومحلياً
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 
@@ -56,10 +56,47 @@ app.use('/vendor/bootstrap', express.static(path.join(__dirname, 'node_modules/b
 app.use('/vendor/fontawesome', express.static(path.join(__dirname, 'node_modules/@fortawesome/fontawesome-free')));
 
 // ==========================================
-// 4. الاتصال بقاعدة البيانات
+// 4. الاتصال بقاعدة البيانات والتهيئة التلقائية
 // ==========================================
+async function autoSeedDatabase() {
+    try {
+        const User = require('./models/User');
+        const Product = require('./models/Product');
+        const fs = require('fs');
+
+        // 1. تهيئة الموظفين والمشرفين تلقائياً إذا كانت الداتابيز فارغة
+        const userCount = await User.countDocuments();
+        if (userCount === 0) {
+            console.log('🌱 No users found in local database. Auto-seeding initial users...');
+            const usersFilePath = path.join(__dirname, 'initial_users.json');
+            if (fs.existsSync(usersFilePath)) {
+                const usersData = JSON.parse(fs.readFileSync(usersFilePath, 'utf-8'));
+                await User.insertMany(usersData);
+                console.log(`✅ Auto-seeded ${usersData.length} users successfully.`);
+            }
+        }
+
+        // 2. تهيئة الأصناف تلقائياً إذا كانت الداتابيز فارغة
+        const productCount = await Product.countDocuments();
+        if (productCount === 0) {
+            console.log('🌱 No products found in local database. Auto-seeding initial products...');
+            const productsFilePath = path.join(__dirname, 'initial_products.json');
+            if (fs.existsSync(productsFilePath)) {
+                const productsData = JSON.parse(fs.readFileSync(productsFilePath, 'utf-8'));
+                await Product.insertMany(productsData);
+                console.log(`✅ Auto-seeded ${productsData.length} products successfully.`);
+            }
+        }
+    } catch (err) {
+        console.error('❌ Error during auto-seeding:', err.message);
+    }
+}
+
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('✅ Connected to MongoDB Enterprise Database...'))
+    .then(() => {
+        console.log('✅ Connected to MongoDB Enterprise Database...');
+        autoSeedDatabase();
+    })
     .catch(err => {
         console.error('❌ Failed to connect to MongoDB:', err.message);
         console.log('💡 تأكد من تشغيل خدمة MongoDB على جهازك (Localhost).');
@@ -71,7 +108,7 @@ mongoose.connect(process.env.MONGO_URI)
 // ==========================================
 // 5. استدعاء المسارات (Routes)
 // ==========================================
-const { requireAuth } = require('./middlewares/authMiddleware');
+const { requireAuth, authorizeAdmin } = require('./middlewares/authMiddleware');
 const adminController = require('./controllers/adminController');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -80,8 +117,8 @@ const adminRoutes = require('./routes/adminRoutes');
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 
-// مسار لوحة القيادة الرئيسي (Dashboard)
-app.get('/dashboard', requireAuth, adminController.getDashboard);
+// مسار لوحة القيادة الرئيسي (Dashboard) - محمي للأدمن فقط
+app.get('/dashboard', requireAuth, authorizeAdmin, adminController.getDashboard);
 // إعادة توجيه المسار الرئيسي (/) تلقائيا إلى صفحة تسجيل الدخول
 app.get('/', (req, res) => {
     res.redirect('/auth/login');

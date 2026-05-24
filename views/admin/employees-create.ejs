@@ -1,0 +1,307 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<link rel="stylesheet" href="/css/users.css">
+
+<style>
+    /* تنسيقات إضافية مخصصة لصفحة النموذج المنفصلة لتكون غاية في الجمال والاحترافية */
+    .form-card {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+        border-radius: 1.5rem;
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+    }
+    .form-header-gradient {
+        background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+        padding: 2rem;
+        color: white;
+        position: relative;
+    }
+    .form-header-gradient::before {
+        content: ''; position: absolute; top: -50%; right: -10%;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%; filter: blur(15px);
+    }
+</style>
+
+<div class="main-content-wrapper">
+    <main class="container py-5 fade-in-up">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
+                
+                <!-- زر رجوع للخلف بلمسة راقية -->
+                <div class="mb-4">
+                    <a href="/admin/employees" class="btn btn-light rounded-pill fw-bold border px-3 py-2 transition-all hover-lift d-inline-flex align-items-center gap-2">
+                        <i class="fa-solid fa-arrow-right fs-6"></i> العودة لجدول الموظفين
+                    </a>
+                </div>
+
+                <!-- كرت التعيين الذكي -->
+                <div class="form-card">
+                    <div class="form-header-gradient d-flex align-items-center gap-3">
+                        <div class="bg-white bg-opacity-20 text-white p-3 rounded-4 d-flex align-items-center justify-content-center shadow-sm" style="width: 56px; height: 56px;">
+                            <i class="fa-solid fa-user-plus fs-4 animate-pulse"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-black mb-1 text-white">تعيين موظف جديد</h4>
+                            <p class="mb-0 text-white-50 small">قم بإنشاء حساب للموظف الجديد وتعيين دوره والصلاحيات اللازمة له</p>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5">
+                        <form id="userForm" action="/admin/employees/create" method="POST" novalidate>
+                            
+                            <!-- القسم الأول: البيانات الشخصية -->
+                            <h6 class="text-primary fw-black mb-4 d-flex align-items-center gap-2">
+                                <span class="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-2 small">١</span> البيانات الأساسية للموظف
+                            </h6>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6 form-floating">
+                                    <input type="text" class="form-control rounded-3 bg-light border-0 shadow-none" name="name" id="userNameInput" placeholder="الاسم بالكامل" required autocomplete="off">
+                                    <label for="userNameInput" class="text-muted ms-2">الاسم بالكامل للموظف</label>
+                                    <div class="invalid-feedback small fw-bold px-2">الاسم بالكامل مطلوب*</div>
+                                </div>
+                                
+                                <div class="col-md-6 form-floating">
+                                    <input type="text" class="form-control rounded-3 bg-light border-0 shadow-none text-start" dir="ltr" name="username" id="userUsernameInput" placeholder="اسم المستخدم" required autocomplete="off" pattern="^[a-zA-Z0-9_]{4,30}$">
+                                    <label for="userUsernameInput" class="text-muted ms-2">اسم المستخدم (لتسجيل الدخول)</label>
+                                    <div class="invalid-feedback small fw-bold px-2">إنجليزي وأرقام فقط (٤ حروف ع الأقل وبدون مسافات)</div>
+                                </div>
+                            </div>
+
+                            <!-- القسم الثاني: الأمان وكلمة المرور -->
+                            <h6 class="text-primary fw-black mb-4 d-flex align-items-center gap-2">
+                                <span class="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-2 small">٢</span> إعدادات الحماية والأمان
+                            </h6>
+
+                            <div id="passwordSection" class="mb-4">
+                                <div class="form-floating mb-3 position-relative">
+                                    <input type="password" class="form-control rounded-3 bg-light border-0 shadow-none text-start pe-5" dir="ltr" name="password" id="userPasswordInput" placeholder="كلمة المرور" required minlength="8">
+                                    <label for="userPasswordInput" class="text-muted">كلمة المرور</label>
+                                    <i class="fa-regular fa-eye password-toggle" id="togglePass"></i>
+                                    
+                                    <div class="progress mt-2 bg-light border" style="height: 5px; border-radius: 3px;">
+                                        <div id="strengthMeter" class="progress-bar bg-danger transition-all" role="progressbar" style="width: 0%;"></div>
+                                    </div>
+                                    <small id="strengthText" class="text-muted d-block mt-1 ps-1" style="font-size: 0.75rem;">٨ أحرف على الأقل</small>
+                                </div>
+
+                                <div class="form-floating position-relative">
+                                    <input type="password" class="form-control rounded-3 bg-light border-0 shadow-none text-start pe-5" dir="ltr" id="confirmPasswordInput" placeholder="تأكيد كلمة المرور" required>
+                                    <label for="confirmPasswordInput" class="text-muted">تأكيد كلمة المرور</label>
+                                    <i class="fa-regular fa-eye password-toggle" id="toggleConfirmPass"></i>
+                                    
+                                    <small id="passwordMatchError" class="text-danger d-none mt-1 d-block fw-bold ps-1" style="font-size: 0.8rem;">
+                                        <i class="fa-solid fa-triangle-exclamation me-1"></i> كلمتا المرور غير متطابقتين!
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- القسم الثالث: الصلاحيات وتعيين الدور -->
+                            <h6 class="text-primary fw-black mb-4 d-flex align-items-center gap-2">
+                                <span class="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-2 small">٣</span> تعيين الدور والصلاحية
+                            </h6>
+
+                            <div class="form-floating mb-4">
+                                <select class="form-select rounded-3 bg-light border-0 shadow-none fw-bold" name="role" id="userRoleInput" required>
+                                    <option value="" disabled selected>-- اختر الصلاحية والتعيين --</option>
+                                    <option value="agent">كاشير / موظف مبيعات (Cashier)</option>
+                                    <option value="admin">مدير النظام / مسؤول مالي (Manager)</option>
+                                </select>
+                                <label for="userRoleInput" class="text-muted">تحديد الصلاحية والتعيين</label>
+                                <div class="invalid-feedback small fw-bold px-2">يجب اختيار دور الموظف وتعيينه*</div>
+                            </div>
+
+                            <hr class="my-4 opacity-10">
+
+                            <!-- أزرار الإجراءات الفخمة -->
+                            <div class="d-flex flex-column flex-md-row gap-3">
+                                <button type="submit" class="btn btn-primary-gradient flex-grow-1 py-3 fw-bold rounded-pill shadow-sm transition-all hover-lift" id="submitBtn">
+                                    <span class="btn-text">حفظ وتعيين الموظف بالكامل <i class="fa-solid fa-check ms-1"></i></span>
+                                    <div class="spinner-border spinner-border-sm text-light btn-loader" role="status"></div>
+                                </button>
+                                <a href="/admin/employees" class="btn btn-light border py-3 px-4 fw-bold rounded-pill shadow-xs transition-all hover-lift text-center">
+                                    إلغاء التعيين
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const userForm = document.getElementById('userForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const nameInput = document.getElementById('userNameInput');
+        const usernameInput = document.getElementById('userUsernameInput');
+        const passwordInput = document.getElementById('userPasswordInput');
+        const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+        const roleInput = document.getElementById('userRoleInput');
+        const matchError = document.getElementById('passwordMatchError');
+        const strengthMeter = document.getElementById('strengthMeter');
+        const strengthText = document.getElementById('strengthText');
+        
+        nameInput.focus();
+
+        // ==========================================
+        // إظهار/إخفاء الباسورد (تفاعل العين)
+        // ==========================================
+        function setupPasswordToggle(toggleIconId, inputElement) {
+            const icon = document.getElementById(toggleIconId);
+            if(icon && inputElement) {
+                icon.addEventListener('click', function() {
+                    const isPassword = inputElement.type === 'password';
+                    inputElement.type = isPassword ? 'text' : 'password';
+                    this.classList.toggle('fa-eye');
+                    this.classList.toggle('fa-eye-slash');
+                    this.style.color = isPassword ? '#6366f1' : '#94a3b8';
+                });
+            }
+        }
+        setupPasswordToggle('togglePass', passwordInput);
+        setupPasswordToggle('toggleConfirmPass', confirmPasswordInput);
+
+        // ==========================================
+        // مقياس قوة الباسورد الحي (Live Strength)
+        // ==========================================
+        passwordInput.addEventListener('input', function() {
+            const val = this.value;
+            let strength = 0;
+            
+            if (val.length >= 8) strength += 25; 
+            if (val.match(/[a-z]+/)) strength += 25; 
+            if (val.match(/[A-Z]+/)) strength += 25; 
+            if (val.match(/[0-9]+/)) strength += 25; 
+            if (val.match(/[$@#&!]+/)) strength += 25; 
+
+            strength = Math.min(strength, 100);
+            strengthMeter.style.width = strength + '%';
+
+            if (val.length === 0) {
+                strengthMeter.style.width = '0%';
+                strengthText.innerText = '٨ أحرف على الأقل';
+                strengthText.className = 'text-muted d-block mt-1 ps-1';
+            } else if (strength < 50 || val.length < 8) {
+                strengthMeter.className = 'progress-bar bg-danger transition-all';
+                strengthText.innerText = 'ضعيفة جداً (استخدم حروف وأرقام)';
+                strengthText.className = 'text-danger d-block mt-1 ps-1 fw-bold';
+            } else if (strength < 75) {
+                strengthMeter.className = 'progress-bar bg-warning transition-all';
+                strengthText.innerText = 'متوسطة (أضف رموزاً لتكون أقوى)';
+                strengthText.className = 'text-warning d-block mt-1 ps-1 fw-bold';
+            } else {
+                strengthMeter.className = 'progress-bar bg-success transition-all';
+                strengthText.innerText = 'قوية وممتازة ✅';
+                strengthText.className = 'text-success d-block mt-1 ps-1 fw-bold';
+            }
+        });
+
+        // ==========================================
+        // التحقق الفوري من تطابق كلمات المرور
+        // ==========================================
+        function checkPasswordsMatch() {
+            if (confirmPasswordInput.value.length > 0) {
+                if (confirmPasswordInput.value === passwordInput.value) {
+                    matchError.classList.add('d-none');
+                    confirmPasswordInput.classList.remove('is-invalid');
+                    confirmPasswordInput.classList.add('is-valid');
+                    return true;
+                } else {
+                    matchError.classList.remove('d-none');
+                    confirmPasswordInput.classList.remove('is-valid');
+                    confirmPasswordInput.classList.add('is-invalid');
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        passwordInput.addEventListener('input', checkPasswordsMatch);
+        confirmPasswordInput.addEventListener('input', checkPasswordsMatch);
+
+        // ==========================================
+        // الإرسال عبر AJAX والتحقق الذكي
+        // ==========================================
+        userForm.addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+            
+            userForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+            if (!userForm.checkValidity()) {
+                userForm.classList.add('was-validated');
+                return;
+            }
+
+            if (passwordInput.value.length < 8) {
+                passwordInput.classList.add('is-invalid');
+                Swal.fire('تنبيه', 'كلمة المرور قصيرة جداً، يجب أن تكون ٨ أحرف على الأقل.', 'warning');
+                return;
+            }
+            if (!checkPasswordsMatch()) return;
+            
+            submitBtn.classList.add('btn-loading');
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData(userForm);
+                const data = Object.fromEntries(formData);
+
+                const response = await fetch(userForm.action, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    submitBtn.classList.remove('btn-loading');
+                    submitBtn.disabled = false;
+
+                    if (result.message.includes('اسم المستخدم')) {
+                        usernameInput.classList.add('is-invalid');
+                        usernameInput.focus();
+                    } else if (result.message.includes('هذا الاسم مسجل')) {
+                        nameInput.classList.add('is-invalid');
+                        nameInput.focus();
+                    }
+
+                    Swal.fire({
+                        title: 'تنبيه من النظام',
+                        text: result.message,
+                        icon: 'error',
+                        confirmButtonColor: '#ef4444',
+                        confirmButtonText: 'تعديل البيانات',
+                        customClass: { confirmButton: 'rounded-pill px-4 fw-bold' }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'تم التعيين بنجاح',
+                        text: result.message,
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = '/admin/employees';
+                    });
+                }
+            } catch (error) {
+                submitBtn.classList.remove('btn-loading');
+                submitBtn.disabled = false;
+                Swal.fire('خطأ بالشبكة', 'تعذر الاتصال بالخادم، يرجى التأكد من اتصالك بالإنترنت.', 'error');
+            }
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,408 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+ 
+ <link rel="stylesheet" href="/css/users.css">
+ 
+ <style>
+     /* =========================================
+        ✨ تصميم شاشة الإعدادات الشخصية الفوقية (Premium Profile Settings UI)
+        ========================================= */
+     .profile-badge-card {
+         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+         color: white;
+         border-radius: 1.5rem;
+         padding: 2.5rem 2rem;
+         box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.15);
+         position: relative;
+         overflow: hidden;
+         text-align: center;
+     }
+     .profile-badge-card::before {
+         content: ''; position: absolute; top: -10%; right: -10%;
+         width: 150px; height: 150px;
+         background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(255,255,255,0) 70%);
+         border-radius: 50%;
+     }
+     .profile-avatar-large {
+         width: 80px; height: 80px;
+         border-radius: 20px;
+         background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+         color: white;
+         font-size: 2.5rem;
+         font-weight: 900;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         margin: 0 auto 1.5rem auto;
+         box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+         border: 4px solid rgba(255,255,255,0.1);
+     }
+     
+     .settings-card {
+         background: #ffffff;
+         border: 1px solid rgba(226, 232, 240, 0.8);
+         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01), 0 2px 4px -1px rgba(0,0,0,0.01);
+         border-radius: 1.5rem;
+         overflow: hidden;
+     }
+ </style>
+ 
+ <div class="main-content-wrapper">
+     <main class="container py-5 fade-in-up">
+         
+         <div class="row justify-content-center g-4">
+             
+             <!-- العمود الأيمن: بطاقة الهوية الرقمية للموظف -->
+             <div class="col-lg-4 col-xl-3">
+                 <div class="profile-badge-card">
+                     <div class="profile-avatar-large">
+                         <%= currentUser.name.charAt(0).toUpperCase() %>
+                     </div>
+                     <h5 class="fw-black mb-1"><%= currentUser.name %></h5>
+                     <span class="text-white-50 small font-monospace"><i class="fa-solid fa-at me-1"></i><%= currentUser.username %></span>
+                     
+                     <div class="mt-3">
+                         <% if (currentUser.role === 'admin') { %>
+                             <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25 px-3 py-2 rounded-pill fw-bold">مدير نظام / مسؤول مالي</span>
+                         <% } else { %>
+                             <span class="badge bg-primary bg-opacity-20 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-bold">كاشير / موظف مبيعات</span>
+                         <% } %>
+                     </div>
+ 
+                     <div class="border-top border-white border-opacity-10 pt-4 mt-4 text-start">
+                         <div class="mb-3">
+                             <span class="text-white-50 small d-block mb-1">الرقم التعريفي للموظف (ID):</span>
+                             <span class="fw-bold text-white font-monospace"><i class="fa-solid fa-hashtag opacity-50 me-1"></i><%= currentUser.accountId %></span>
+                         </div>
+                         <div>
+                             <span class="text-white-50 small d-block mb-1">تاريخ التعيين بالنظام:</span>
+                             <span class="fw-bold text-white"><i class="fa-regular fa-calendar me-1 opacity-50"></i> <%= currentUser.createdAt.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+ 
+             <!-- العمود الأيسر: فورم تحديث بيانات الدخول -->
+             <div class="col-lg-8 col-xl-7">
+                 <div class="settings-card card border-0">
+                     <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                         <h5 class="fw-black text-dark mb-0 d-flex align-items-center gap-2">
+                             <i class="fa-solid fa-user-shield text-primary fs-5"></i> إدارة وتحديث بيانات الدخول
+                         </h5>
+                         <p class="text-muted small mb-0 mt-1">تعديل اسمك الكامل، اسم المستخدم، وتحديث كلمة المرور بأمان</p>
+                     </div>
+ 
+                     <div class="card-body p-4 p-md-5">
+                         <form id="settingsForm" action="/admin/settings/update" method="POST" novalidate>
+                             
+                             <!-- القسم الأول: تعديل الاسم واسم المستخدم -->
+                             <h6 class="text-primary fw-black mb-4 d-flex align-items-center gap-2">
+                                 <span class="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-2 small">١</span> البيانات الشخصية للملف
+                             </h6>
+ 
+                             <div class="row g-3 mb-4">
+                                 <div class="col-md-6 form-floating">
+                                     <input type="text" class="form-control rounded-3 <%= currentUser.role !== 'admin' ? 'bg-secondary bg-opacity-10 text-muted' : 'bg-light border-0' %> shadow-none font-sans" name="name" id="userNameInput" placeholder="الاسم بالكامل" required autocomplete="off" value="<%= currentUser.name %>" <%= currentUser.role !== 'admin' ? 'readonly style="cursor: not-allowed;"' : '' %>>
+                                     <label for="userNameInput" class="text-muted ms-2"><%= currentUser.role !== 'admin' ? 'الاسم بالكامل (يُعدل بواسطة المدير فقط)' : 'الاسم بالكامل للمدير' %></label>
+                                     <div class="invalid-feedback small fw-bold px-2">مطلوب*</div>
+                                 </div>
+                                 
+                                 <div class="col-md-6 form-floating">
+                                     <input type="text" class="form-control rounded-3 bg-light border-0 shadow-none text-start" dir="ltr" name="username" id="userUsernameInput" placeholder="اسم المستخدم" required autocomplete="off" pattern="^[a-zA-Z0-9_]{4,30}$" value="<%= currentUser.username %>">
+                                     <label for="userUsernameInput" class="text-muted ms-2">اسم المستخدم (للدخول)</label>
+                                     <div class="invalid-feedback small fw-bold px-2">إنجليزي وأرقام فقط (٤ حروف ع الأقل)</div>
+                                 </div>
+                             </div>
+ 
+                             <!-- القسم الثاني: تغيير الباسورد (اختياري) -->
+                             <h6 class="text-primary fw-black mb-4 d-flex align-items-center gap-2">
+                                 <span class="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-2 small">٢</span> تغيير كلمة المرور (اختياري)
+                             </h6>
+ 
+                             <div class="row g-3 mb-4">
+                                 <div class="col-md-6 form-floating position-relative">
+                                     <input type="password" class="form-control rounded-3 bg-light border-0 shadow-none text-start pe-5" dir="ltr" name="newPassword" id="userPasswordInput" placeholder="كلمة المرور الجديدة" minlength="8">
+                                     <label for="userPasswordInput" class="text-muted">كلمة المرور الجديدة</label>
+                                     <i class="fa-regular fa-eye password-toggle" id="togglePass"></i>
+                                     
+                                     <div class="progress mt-2 bg-light border" style="height: 5px; border-radius: 3px;">
+                                         <div id="strengthMeter" class="progress-bar bg-danger transition-all" role="progressbar" style="width: 0%;"></div>
+                                     </div>
+                                     <small id="strengthText" class="text-muted d-block mt-1 ps-1" style="font-size: 0.75rem;">٨ أحرف على الأقل (اتركه فارغاً لعدم التعديل)</small>
+                                 </div>
+ 
+                                 <div class="col-md-6 form-floating position-relative">
+                                     <input type="password" class="form-control rounded-3 bg-light border-0 shadow-none text-start pe-5" dir="ltr" id="confirmPasswordInput" placeholder="تأكيد كلمة المرور">
+                                     <label for="confirmPasswordInput" class="text-muted">تأكيد كلمة المرور الجديدة</label>
+                                     <i class="fa-regular fa-eye password-toggle" id="toggleConfirmPass"></i>
+                                     
+                                     <small id="passwordMatchError" class="text-danger d-none mt-1 d-block fw-bold ps-1" style="font-size: 0.8rem;">
+                                         <i class="fa-solid fa-triangle-exclamation me-1"></i> كلمتا المرور غير متطابقتين!
+                                     </small>
+                                 </div>
+                             </div>
+ 
+                             <!-- القسم الثالث: إعدادات طابعات الفواتير (للتشغيل المكتبي فقط) -->
+                             <div id="printerSettingsSection" class="d-none">
+                                 <h6 class="text-success fw-black mb-4 d-flex align-items-center gap-2">
+                                     <span class="bg-success bg-opacity-10 text-success px-2 py-1 rounded-2 small">٣</span> إعدادات طابعات الفواتير (المطبخ والكاشير)
+                                 </h6>
+ 
+                                 <div class="row g-3 mb-4">
+                                     <div class="col-md-6">
+                                         <label class="small text-muted fw-bold mb-2">طابعة المطبخ والتحضير (الداخلية)</label>
+                                         <select class="form-select rounded-3 bg-light border-0 shadow-none" id="kitchenPrinterSelect">
+                                             <option value="">الطابعة الافتراضية للجهاز</option>
+                                         </select>
+                                         <small class="text-muted" style="font-size: 0.75rem;">تطبع بون المطبخ (صفحة التحضير الأولى)</small>
+                                     </div>
+                                     
+                                     <div class="col-md-6">
+                                         <label class="small text-muted fw-bold mb-2">طابعة الكاشير والعميل (الخارجية)</label>
+                                         <select class="form-select rounded-3 bg-light border-0 shadow-none" id="cashierPrinterSelect">
+                                             <option value="">الطابعة الافتراضية للجهاز</option>
+                                         </select>
+                                         <small class="text-muted" style="font-size: 0.75rem;">تطبع بون العميل ونسخة الإدارة (الصفحة ٢ و ٣)</small>
+                                     </div>
+                                 </div>
+                             </div>
+ 
+                             <!-- القسم الرابع: حارس الأمان (بوابة التأكيد) -->
+                             <h6 class="text-danger fw-black mb-4 d-flex align-items-center gap-2">
+                                 <span class="bg-danger bg-opacity-10 text-danger px-2 py-1 rounded-2 small">٤</span> حارس التأكيد الأمني (مطلوب)
+                             </h6>
+ 
+                             <div class="form-floating mb-4 position-relative">
+                                 <input type="password" class="form-control rounded-3 border-danger border-opacity-25 bg-danger bg-opacity-5 text-start pe-5 shadow-none" dir="ltr" name="currentPassword" id="currentPasswordInput" placeholder="كلمة المرور الحالية" required>
+                                 <label for="currentPasswordInput" class="text-danger fw-bold">أدخل كلمة المرور الحالية للتأكيد</label>
+                                 <i class="fa-regular fa-eye password-toggle text-danger" id="toggleCurrentPass"></i>
+                                 <div class="invalid-feedback small fw-bold px-2">يجب إدخال كلمة المرور الحالية لتطبيق التعديلات الحساسة*</div>
+                             </div>
+ 
+                             <hr class="my-4 opacity-10">
+ 
+                             <!-- أزرار الإجراءات الفخمة -->
+                             <div class="d-flex flex-column flex-md-row gap-3">
+                                 <button type="submit" class="btn btn-primary-gradient flex-grow-1 py-3 fw-bold rounded-pill shadow-sm transition-all hover-lift" id="submitBtn">
+                                     <span class="btn-text">تحديث وحفظ التعديلات الحساسة <i class="fa-solid fa-check-double ms-1"></i></span>
+                                     <div class="spinner-border spinner-border-sm text-light btn-loader" role="status"></div>
+                                 </button>
+                                 <a href="/admin/pos" class="btn btn-light border py-3 px-4 fw-bold rounded-pill shadow-xs transition-all hover-lift text-center">
+                                     تراجع للرئيسية
+                                 </a>
+                             </div>
+                         </form>
+                     </div>
+                 </div>
+             </div>
+ 
+         </div>
+     </main>
+ </div>
+ 
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ <script>
+     document.addEventListener('DOMContentLoaded', function() {
+         const settingsForm = document.getElementById('settingsForm');
+         const submitBtn = document.getElementById('submitBtn');
+         const nameInput = document.getElementById('userNameInput');
+         const usernameInput = document.getElementById('userUsernameInput');
+         const newPasswordInput = document.getElementById('userPasswordInput');
+         const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+         const currentPasswordInput = document.getElementById('currentPasswordInput');
+         const matchError = document.getElementById('passwordMatchError');
+         const strengthMeter = document.getElementById('strengthMeter');
+         const strengthText = document.getElementById('strengthText');
+         
+         nameInput.focus();
+ 
+         // ==========================================
+         // إظهار/إخفاء الباسورد (تفاعل العين)
+         // ==========================================
+         function setupPasswordToggle(toggleIconId, inputElement) {
+             const icon = document.getElementById(toggleIconId);
+             if(icon && inputElement) {
+                 icon.addEventListener('click', function() {
+                     const isPassword = inputElement.type === 'password';
+                     inputElement.type = isPassword ? 'text' : 'password';
+                     this.classList.toggle('fa-eye');
+                     this.classList.toggle('fa-eye-slash');
+                     this.style.color = isPassword ? '#ef4444' : '#94a3b8';
+                 });
+             }
+         }
+         setupPasswordToggle('togglePass', newPasswordInput);
+         setupPasswordToggle('toggleConfirmPass', confirmPasswordInput);
+         setupPasswordToggle('toggleCurrentPass', currentPasswordInput);
+ 
+         // ==========================================
+         // مقياس قوة الباسورد الحي (Live Strength)
+         // ==========================================
+         newPasswordInput.addEventListener('input', function() {
+             const val = this.value;
+             let strength = 0;
+             
+             if (val.length >= 8) strength += 25; 
+             if (val.match(/[a-z]+/)) strength += 25; 
+             if (val.match(/[A-Z]+/)) strength += 25; 
+             if (val.match(/[0-9]+/)) strength += 25; 
+             if (val.match(/[$@#&!]+/)) strength += 25; 
+ 
+             strength = Math.min(strength, 100);
+             strengthMeter.style.width = strength + '%';
+ 
+             if (val.length === 0) {
+                 strengthMeter.style.width = '0%';
+                 strengthText.innerText = '٨ أحرف على الأقل (اتركه فارغاً لعدم التعديل)';
+                 strengthText.className = 'text-muted d-block mt-1 ps-1';
+             } else if (strength < 50 || val.length < 8) {
+                 strengthMeter.className = 'progress-bar bg-danger transition-all';
+                 strengthText.innerText = 'ضعيفة جداً (استخدم حروف وأرقام)';
+                 strengthText.className = 'text-danger d-block mt-1 ps-1 fw-bold';
+             } else if (strength < 75) {
+                 strengthMeter.className = 'progress-bar bg-warning transition-all';
+                 strengthText.innerText = 'متوسطة (أضف رموزاً لتكون أقوى)';
+                 strengthText.className = 'text-warning d-block mt-1 ps-1 fw-bold';
+             } else {
+                 strengthMeter.className = 'progress-bar bg-success transition-all';
+                 strengthText.innerText = 'قوية وممتازة ✅';
+                 strengthText.className = 'text-success d-block mt-1 ps-1 fw-bold';
+             }
+         });
+ 
+         // ==========================================
+         // التحقق الفوري من تطابق كلمات المرور
+         // ==========================================
+         function checkPasswordsMatch() {
+             if (confirmPasswordInput.value.length > 0 || newPasswordInput.value.length > 0) {
+                 if (confirmPasswordInput.value === newPasswordInput.value) {
+                     matchError.classList.add('d-none');
+                     confirmPasswordInput.classList.remove('is-invalid');
+                     confirmPasswordInput.classList.add('is-valid');
+                     return true;
+                 } else {
+                     matchError.classList.remove('d-none');
+                     confirmPasswordInput.classList.remove('is-valid');
+                     confirmPasswordInput.classList.add('is-invalid');
+                     return false;
+                 }
+             }
+             return true;
+         }
+         
+         newPasswordInput.addEventListener('input', checkPasswordsMatch);
+         confirmPasswordInput.addEventListener('input', checkPasswordsMatch);
+ 
+         // ==========================================
+         // الإرسال عبر AJAX والتحقق الذكي
+         // ==========================================
+         settingsForm.addEventListener('submit', async function(e) {
+             e.preventDefault(); 
+             
+             settingsForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+ 
+             if (!settingsForm.checkValidity()) {
+                 settingsForm.classList.add('was-validated');
+                 return;
+             }
+ 
+             if (newPasswordInput.value.length > 0) {
+                 if (newPasswordInput.value.length < 8) {
+                     newPasswordInput.classList.add('is-invalid');
+                     Swal.fire('تنبيه', 'كلمة المرور الجديدة قصيرة جداً، يجب أن تكون ٨ أحرف على الأقل.', 'warning');
+                     return;
+                 }
+                 if (!checkPasswordsMatch()) return;
+             }
+             
+             submitBtn.classList.add('btn-loading');
+             submitBtn.disabled = true;
+ 
+             try {
+                 const formData = new FormData(settingsForm);
+                 const data = Object.fromEntries(formData);
+ 
+                 const response = await fetch(settingsForm.action, {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify(data)
+                 });
+ 
+                 const result = await response.json();
+ 
+                 if (!response.ok || !result.success) {
+                     submitBtn.classList.remove('btn-loading');
+                     submitBtn.disabled = false;
+ 
+                     if (result.message.includes('اسم المستخدم')) {
+                         usernameInput.classList.add('is-invalid');
+                         usernameInput.focus();
+                     } else if (result.message.includes('الحالية غير صحيحة')) {
+                         currentPasswordInput.classList.add('is-invalid');
+                         currentPasswordInput.focus();
+                     }
+ 
+                     Swal.fire({
+                         title: 'تنبيه أمني',
+                         text: result.message,
+                         icon: 'error',
+                         confirmButtonColor: '#ef4444',
+                         confirmButtonText: 'تعديل البيانات',
+                         customClass: { confirmButton: 'rounded-pill px-4 fw-bold' }
+                     });
+                 } else {
+                     Swal.fire({
+                         title: 'تم تحديث البيانات',
+                         text: result.message,
+                         icon: 'success',
+                         timer: 1500,
+                         showConfirmButton: false
+                     }).then(() => {
+                         window.location.reload();
+                     });
+                 }
+             } catch (error) {
+                 submitBtn.classList.remove('btn-loading');
+                 submitBtn.disabled = false;
+                 Swal.fire('خطأ بالشبكة', 'تعذر الاتصال بالخادم، يرجى التأكد من اتصالك بالإنترنت.', 'error');
+             }
+         });
+ 
+         // ==========================================
+         // 🖨️ الكشف عن بيئة المطور وجلب الطابعات المتوفرة
+         // ==========================================
+         const isElectron = window.process && window.process.versions && window.process.versions.electron;
+         if (isElectron) {
+             document.getElementById('printerSettingsSection').classList.remove('d-none');
+             
+             try {
+                 const { ipcRenderer } = window.require('electron');
+                 ipcRenderer.invoke('get-printers').then(printers => {
+                     const kitchenSelect = document.getElementById('kitchenPrinterSelect');
+                     const cashierSelect = document.getElementById('cashierPrinterSelect');
+                     
+                     const savedKitchen = localStorage.getItem('kitchenPrinter') || '';
+                     const savedCashier = localStorage.getItem('cashierPrinter') || '';
+                     
+                     printers.forEach(p => {
+                         const opt1 = new Option(p.name + (p.isDefault ? ' (الافتراضية)' : ''), p.name, false, p.name === savedKitchen);
+                         const opt2 = new Option(p.name + (p.isDefault ? ' (الافتراضية)' : ''), p.name, false, p.name === savedCashier);
+                         kitchenSelect.add(opt1);
+                         cashierSelect.add(opt2);
+                     });
+                 });
+             } catch (err) {
+                 console.error('Failed to load electron printers:', err);
+             }
+ 
+             document.getElementById('kitchenPrinterSelect').addEventListener('change', function() {
+                 localStorage.setItem('kitchenPrinter', this.value);
+             });
+             document.getElementById('cashierPrinterSelect').addEventListener('change', function() {
+                 localStorage.setItem('cashierPrinter', this.value);
+             });
+         }
+     });
+ </script>
+ 
+ <%- include('../partials/footer') %>

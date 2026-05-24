@@ -1,112 +1,628 @@
- /* =========================================
-       1. الإعدادات الأساسية والتجاوب
-       ========================================= */
-       body { background-color: #f4f7f9; }
+/* ==========================================================================
+   NEXUS POS ENTERPRISE DESIGN SYSTEM (GLASSMORPHISM & ULTRA-PREMIUM AESTHETICS)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Tajawal:wght@300;400;500;700;900&display=swap');
+
+:root {
+    --primary-color: hsl(235, 86%, 65%);
+    --primary-hover: hsl(235, 86%, 58%);
+    --primary-light: hsla(235, 86%, 65%, 0.08);
+    --success-color: hsl(150, 84%, 37%);
+    --success-light: hsla(150, 84%, 37%, 0.1);
+    --warning-color: hsl(35, 92%, 50%);
+    --danger-color: hsl(350, 80%, 55%);
+    --danger-light: hsla(350, 80%, 55%, 0.1);
     
-       .pos-wrapper {
-           display: flex;
-           height: calc(100vh - 90px);
-           gap: 1.25rem;
-           transition: all 0.3s ease;
-       }
-   
-       @media (max-width: 1200px) {
-           .pos-wrapper { flex-direction: column; height: auto; overflow-y: visible; }
-           .cart-section { width: 100% !important; order: -1; height: 500px; }
-           .products-section { height: 700px; }
-       }
-   
-       /* =========================================
-          2. تصميم الكروت الاحترافي (Minimalist Cards)
-          ========================================= */
-       .products-grid {
-           display: grid;
-           grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-           gap: 12px;
-       }
-   
-       .pos-card {
-           background: #ffffff;
-           border: 1px solid #eef2f6;
-           border-radius: 16px;
-           padding: 12px;
-           cursor: pointer;
-           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-           display: flex;
-           flex-direction: column;
-           justify-content: space-between;
-           height: 120px;
-           position: relative;
-           overflow: hidden;
-       }
-   
-       .pos-card:hover {
-           border-color: #6366f1;
-           box-shadow: 0 8px 20px rgba(99, 102, 241, 0.12);
-           transform: translateY(-3px);
-       }
-   
-       .pos-card:active { transform: scale(0.95); }
-   
-       .pos-card .card-price {
-           font-weight: 900;
-           color: #6366f1;
-           font-size: 1.1rem;
-       }
-   
-       .pos-card .card-title {
-           font-size: 0.85rem;
-           font-weight: 700;
-           color: #1e293b;
-           line-height: 1.3;
-           display: -webkit-box;
-           -webkit-line-clamp: 2;
-           -webkit-box-orient: vertical;
-           overflow: hidden;
-       }
-   
-       .pos-card .stock-indicator {
-           font-size: 0.7rem;
-           font-weight: 800;
-           padding: 2px 8px;
-           border-radius: 20px;
-           background: #f1f5f9;
-           color: #64748b;
-       }
-   
-       .pos-card .stock-indicator.low {
-           background: #fef2f2;
-           color: #ef4444;
-           animation: pulse 2s infinite;
-       }
-   
-       /* =========================================
-          3. تنسيقات الفاتورة (Cart UI)
-          ========================================= */
-       .cart-item-row {
-           background: #ffffff;
-           border: 1px solid #f1f5f9;
-           border-radius: 12px;
-           padding: 10px 12px;
-           margin-bottom: 8px;
-           transition: transform 0.2s;
-       }
-       .cart-item-row:hover { transform: translateX(-5px); border-color: #cbd5e1; }
-       
-       .qty-control {
-           background: #f8fafc;
-           border-radius: 50px;
-           padding: 2px;
-           border: 1px solid #e2e8f0;
-       }
-       
-       .qty-btn {
-           width: 24px; height: 24px;
-           border-radius: 50%;
-           border: none;
-           background: #ffffff;
-           color: #475569;
-           font-weight: bold;
-           display: flex; align-items: center; justify-content: center;
-           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-       }
+    --bg-main: #f5f7fb;
+    --card-bg: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+}
+
+body {
+    background-color: var(--bg-main);
+    font-family: 'Tajawal', 'Outfit', sans-serif;
+    color: var(--text-primary);
+    overflow-y: auto; /* مرونة كاملة */
+}
+
+/* =========================================
+   1. تخطيط الواجهة الأساسية (Desktop-Like Layout)
+   ========================================= */
+.main-content-wrapper {
+    min-height: calc(100vh - 60px);
+}
+
+.pos-wrapper {
+    display: flex;
+    height: calc(100vh - 135px);
+    gap: 1.25rem;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 1200px) {
+    .pos-wrapper {
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+    }
+    .cart-section {
+        width: 100% !important;
+        order: -1;
+        height: auto !important;
+        max-height: none !important;
+    }
+    .products-section {
+        height: 700px !important;
+        max-height: none !important;
+    }
+    .products-scroll-area {
+        max-height: 500px !important;
+    }
+    .cart-scroll-area {
+        max-height: 400px !important;
+    }
+}
+
+/* =========================================
+   2. قسم المنتجات والبحث (Products & Filters)
+   ========================================= */
+.products-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* منطقة التمرير الرأسي للمنتجات */
+.products-scroll-area {
+    flex-grow: 1;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 285px);
+    padding: 15px;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.products-scroll-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.products-scroll-area::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.products-scroll-area::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.products-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* فلاتر الأقسام الجغرافية */
+#categoryList {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+#categoryList::-webkit-scrollbar {
+    height: 6px;
+}
+
+#categoryList::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+#categoryList::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+#categoryList::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+.category-pill {
+    padding: 0.55rem 1.4rem;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.category-pill.active {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+
+.category-pill:not(.active) {
+    background: rgba(241, 245, 249, 0.9);
+    color: var(--text-secondary) !important;
+    border-color: var(--border-color);
+}
+
+.category-pill:not(.active):hover {
+    background: #fff;
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+/* شبكة كروت المنتجات */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    padding-bottom: 20px;
+}
+
+/* تصميم الكارت الاحترافي */
+.pos-card {
+    background: #ffffff;
+    border: 1px solid #eef2f6;
+    border-radius: 18px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 120px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01);
+}
+
+.pos-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 18px;
+    border: 2px solid transparent;
+    pointer-events: none;
+    transition: all 0.15s ease;
+}
+
+.pos-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.08);
+}
+
+.pos-card:hover::after {
+    border-color: var(--primary-color);
+}
+
+.pos-card:active {
+    transform: scale(0.96);
+}
+
+.pos-card .card-price {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    color: var(--primary-color);
+    font-size: 1.15rem;
+    background: var(--primary-light);
+    padding: 1px 8px;
+    border-radius: 10px;
+}
+
+.pos-card .card-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin-top: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.pos-card .stock-indicator {
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: #f1f5f9;
+    color: var(--text-secondary);
+}
+
+.pos-card .stock-indicator.low {
+    background: var(--danger-light);
+    color: var(--danger-color);
+    animation: cardPulse 2s infinite;
+}
+
+@keyframes cardPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* =========================================
+   3. الفاتورة والعمليات الجانبية (Cart Sidebar)
+   ========================================= */
+.cart-section {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* منطقة سكرول السلة المضمونة */
+.cart-scroll-area {
+    flex: 1 1 0%;
+    min-height: 180px; /* ضمان مساحة رؤية واضحة جداً كحد أدنى */
+    overflow-y: auto !important;
+    padding: 12px;
+    background: #f8fafc;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+.cart-scroll-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cart-scroll-area::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+.cart-scroll-area::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.cart-item-row {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 14px;
+    padding: 9px 12px;
+    margin-bottom: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+    transition: all 0.2s ease;
+}
+
+.cart-item-row:hover {
+    transform: translateX(-3px);
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.05);
+}
+
+.qty-control {
+    background: #f1f5f9;
+    border-radius: 50px;
+    padding: 3px;
+    border: 1px solid #cbd5e1;
+}
+
+.qty-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: #ffffff;
+    color: #475569;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    transition: all 0.15s ease;
+    font-size: 0.85rem;
+}
+
+.qty-btn:hover {
+    background: var(--primary-color);
+    color: #ffffff;
+}
+
+/* أزرار نوع الطلب */
+.order-type-btn {
+    flex: 1;
+    border: 1px solid var(--border-color);
+    background: #f8fafc;
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 8px 4px;
+    transition: all 0.2s ease;
+}
+
+.order-type-btn.active {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: #ffffff;
+    border-color: #0f172a;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.order-type-btn:first-child {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+.order-type-btn:last-child {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+/* الحسابات والآلة الحاسبة */
+.calc-card {
+    background: #f8fafc;
+    border-radius: 14px;
+    border: 1px solid #f1f5f9;
+}
+
+.calc-title {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 800;
+}
+
+.calc-value {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 900;
+    font-size: 1.05rem;
+}
+
+.calc-value.change {
+    color: var(--success-color);
+}
+
+/* خانات الإدخال الفخمة */
+.custom-input {
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    font-weight: 700;
+    padding: 5px 10px;
+    transition: all 0.15s ease;
+    background-color: #fff;
+}
+
+.custom-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+    outline: none;
+}
+
+/* المجموع النهائي والزر */
+.totals-box {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.12);
+}
+
+.total-number {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 900;
+}
+
+.pay-btn {
+    background: linear-gradient(135deg, var(--success-color), #059669);
+    border: none;
+    color: #fff;
+    font-weight: 900;
+    font-size: 1.05rem;
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.25);
+    transition: all 0.2s ease;
+}
+
+.pay-btn:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 8px 22px rgba(16, 185, 129, 0.35);
+}
+
+/* ==========================================================================
+   4. التنسيق الدقيق للفواتير السحابية الحرارية المتتالية (Saving Paper & Compact)
+   ========================================================================== */
+@media print {
+    /* التوجيه بالطول للورق الحراري المستمر */
+    @page {
+        size: 80mm auto;
+        margin: 0;
+    }
+}
+
+/* ستايل ورقة الكاشير 80 مم للطباعة المباشرة المتتالية المدمجة جداً لمنع التهدير */
+.thermal-ticket {
+    width: 80mm;
+    padding: 4px 10px; /* تقليص الحواف العلوية والسفلية لمنع تهدير الورق */
+    font-family: 'Tajawal', sans-serif;
+    color: #000;
+    direction: rtl;
+    background: #fff;
+    margin: 0 auto;
+    font-size: 12px; /* تقليص الخط ليعطي كثافة عالية ويوفر الورق */
+    line-height: 1.25; /* تقريب الأسطر لتوفير الطول */
+    box-sizing: border-box;
+}
+
+.thermal-ticket h2, .thermal-ticket h3 {
+    margin: 0;
+    text-align: center;
+}
+
+.thermal-header {
+    text-align: center;
+    border-bottom: 1.5px dashed #000;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+}
+
+.bone-box {
+    border: 2px solid #000;
+    padding: 3px;
+    margin: 4px auto; /* تقليص الهامش */
+    width: 80%;
+    text-align: center;
+    font-weight: 900;
+    font-size: 18px;
+}
+
+.copy-banner {
+    background: #000;
+    color: #fff;
+    text-align: center;
+    padding: 2px 0;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin: 3px 0 6px 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.thermal-details {
+    width: 100%;
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+
+.thermal-details td {
+    padding: 1px 0;
+}
+
+.thermal-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 4px;
+}
+
+.thermal-table th {
+    border-bottom: 1.5px solid #000;
+    padding-bottom: 2px;
+    font-size: 11px;
+}
+
+.thermal-table td {
+    padding: 3px 0; /* تقليص حشوة الجدول لتوفير المساحة */
+    font-size: 11px;
+}
+
+.financials {
+    border-top: 1.5px dashed #000;
+    padding-top: 4px;
+    font-size: 11px;
+}
+
+.financials .row-flex {
+    display: flex;
+    justify-content: space-between;
+    padding: 1px 0;
+}
+
+.financials .total-row {
+    font-size: 15px; /* تقليص الحجم الإجمالي الكلي قليلاً */
+    font-weight: 900;
+    border-top: 1.5px solid #000;
+    padding-top: 3px;
+    margin-top: 3px;
+}
+
+.thermal-footer {
+    text-align: center;
+    font-size: 10px;
+    margin-top: 8px;
+    border-top: 1px dashed #000;
+    padding-top: 4px;
+}
+
+/* فاصل التذاكر المتتالية (مقص الكتروني أو يدوي) */
+.page-break {
+    border-top: 2px dashed #000; /* خط قص واضح ونظيف */
+    margin: 10px 0; /* تقليص المسافة بين الفواتير الثلاثة */
+    height: 1px;
+    page-break-inside: avoid; /* منع تقسيم الفاتورة الواحدة داخلياً */
+}
+
+/* ==========================================================================
+   5. ستايلات المرتجعات وتحسينات سلة المبيعات (Refund & Cart UX Extensions)
+   ========================================================================== */
+.refunded-row {
+    background-color: rgba(239, 68, 68, 0.05) !important;
+    opacity: 0.8;
+}
+
+.refunded-row td {
+    color: #94a3b8;
+}
+
+.refunded-row .fw-black {
+    color: #ef4444 !important;
+}
+
+.remove-item-btn {
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-item-btn:hover {
+    background-color: var(--danger-light) !important;
+    transform: scale(1.1);
+}
+
+.cart-item-row {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cart-item-row:hover .remove-item-btn {
+    opacity: 1;
+}
+
+/* التمرير الفخم لجسم سلة المبيعات */
+.cart-scrollable-body {
+    flex: 1;
+    overflow-y: auto !important;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #ffffff;
+}
+
+.cart-scrollable-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cart-scrollable-body::-webkit-scrollbar-track {
+    background: #ffffff;
+}
+
+.cart-scrollable-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.cart-scrollable-body::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}

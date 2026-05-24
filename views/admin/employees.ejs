@@ -1,0 +1,195 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %> 
+
+<link rel="stylesheet" href="/css/users.css">
+
+<div class="main-content-wrapper">
+    <main class="container-fluid px-3 px-lg-5 py-4 fade-in-up">
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        title: 'تنبيه',
+                        text: '<%= error %>',
+                        icon: 'error',
+                        confirmButtonColor: '#ef4444',
+                        confirmButtonText: 'إغلاق',
+                        customClass: { confirmButton: 'rounded-pill px-4 fw-bold' }
+                    });
+                });
+            </script>
+        <% } %>
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom">
+            <div class="mb-3 mb-md-0">
+                <h3 class="fw-black text-dark mb-1 d-flex align-items-center gap-2">
+                    <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="fa-solid fa-users fs-5"></i>
+                    </div>
+                    إدارة وتعيين الموظفين
+                </h3>
+                <p class="text-muted small mb-0 ms-5" style="margin-right: 3.2rem;">إضافة وتعيين موظفي الكاشير والمدراء ومتابعة سجلات النشاط</p>
+            </div>
+            <a href="/admin/employees/new" class="btn btn-primary-gradient fw-bold px-4 py-2 rounded-pill shadow-sm d-flex align-items-center gap-2 transition-all hover-lift">
+                <i class="fa-solid fa-plus"></i> تعيين موظف جديد
+            </a>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 custom-table">
+                                <thead class="bg-light">
+                                    <tr class="text-muted text-uppercase tracking-wide">
+                                        <th class="py-3 ps-4 border-0">الموظف / الكاشير</th>
+                                        <th class="py-3 border-0">الدور / الصلاحية</th>
+                                        <th class="py-3 border-0">تاريخ التعيين</th>
+                                        <th class="py-3 text-center pe-4 border-0">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="border-top-0">
+                                    <% if (users.length === 0) { %>
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5">
+                                                <div class="text-muted mb-3"><i class="fa-solid fa-folder-open fs-1 opacity-25"></i></div>
+                                                <h6 class="fw-bold">لا يوجد موظفين مسجلين</h6>
+                                                <p class="small text-muted">اضغط على "تعيين موظف جديد" للبدء.</p>
+                                            </td>
+                                        </tr>
+                                    <% } else { %>
+                                        <% users.forEach(u => { %>
+                                            <tr>
+                                                <td class="ps-4 py-3">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <div class="avatar-circle text-primary fw-black fs-5 shadow-sm">
+                                                            <%= u.name.charAt(0).toUpperCase() %>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-bold text-dark d-flex align-items-center gap-2">
+                                                                <%= u.name %>
+                                                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25" style="font-family: monospace; font-size: 0.75rem;" title="الرقم التعريفي للموظف">
+                                                                    <i class="fa-solid fa-hashtag me-1 opacity-50"></i><%= u.accountId %>
+                                                                </span>
+                                                            </div>
+                                                            <div class="text-muted small font-monospace"><i class="fa-solid fa-at opacity-50 me-1"></i><%= u.username %></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="py-3">
+                                                    <% if (u.role === 'admin') { %>
+                                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2 rounded-pill fw-bold">مدير النظام / مسؤول مالي</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-bold">كاشير / موظف مبيعات</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="text-muted small py-3 fw-medium">
+                                                    <i class="fa-regular fa-calendar me-1 opacity-50"></i> <%= u.createdAt.toLocaleDateString('ar-EG') %>
+                                                </td>
+                                                <td class="text-center pe-4 py-3">
+                                                    <div class="d-flex justify-content-center gap-2">
+                                                        <a href="/admin/employees/edit/<%= u._id %>" class="btn-action btn-edit shadow-sm" title="تعديل والصلاحيات">
+                                                            <i class="fa-solid fa-user-gear"></i>
+                                                        </a>
+                                                        <% if (u._id.toString() !== user.id) { %>
+                                                            <button class="btn-action btn-delete shadow-sm" onclick="confirmDelete('<%= u._id %>')" title="حذف">
+                                                                <i class="fa-solid fa-trash"></i>
+                                                            </button>
+                                                        <% } else { %>
+                                                            <button class="btn-action text-muted" style="cursor: not-allowed; opacity: 0.5;" disabled title="لا يمكنك حذف حسابك الحالي">
+                                                                <i class="fa-solid fa-lock"></i>
+                                                            </button>
+                                                        <% } %>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                        <h6 class="fw-black text-dark mb-0 d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-primary fs-5"></i> سجل النشاطات التاريخي
+                        </h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="timeline-wrapper">
+                            <% recentActivities.forEach(activity => { %>
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-primary"></div>
+                                    <div class="timeline-content shadow-sm">
+                                        <div class="fw-bold text-dark fs-6"><%= activity.action %></div>
+                                        <div class="text-muted small mt-1 d-flex justify-content-between align-items-center">
+                                            <span><i class="fa-regular fa-user me-1"></i><%= activity.user %></span>
+                                            <span class="opacity-75 badge bg-light text-dark"><%= activity.time %></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ==========================================
+        // تأكيد الحذف وحذف الحساب عبر الـ AJAX
+        // ==========================================
+        window.confirmDelete = function(id) {
+            Swal.fire({
+                title: 'هل أنت متأكد؟',
+                text: 'لن تتمكن من استعادة ملف الموظف وحسابه بعد الحذف.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#cbd5e1',
+                confirmButtonText: 'نعم، احذف نهائياً',
+                cancelButtonText: 'تراجع',
+                reverseButtons: true, 
+                customClass: { 
+                    confirmButton: 'rounded-pill px-4 fw-bold shadow-sm', 
+                    cancelButton: 'rounded-pill px-4 fw-bold text-dark' 
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'جاري الحذف...',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+                    
+                    try {
+                        const response = await fetch(`/admin/employees/delete/${id}`, { method: 'GET' });
+                        const data = await response.json();
+                        
+                        if (response.ok && data.success) {
+                            Swal.fire({ icon: 'success', title: 'تم الحذف', timer: 1500, showConfirmButton: false })
+                                .then(() => window.location.reload());
+                        } else {
+                            Swal.fire('تنبيه', data.message, 'warning');
+                        }
+                    } catch (error) {
+                        Swal.fire('خطأ بالشبكة', 'فشل الاتصال بالخادم.', 'error');
+                    }
+                }
+            });
+        };
+    });
+</script>
+
+<%- include('../partials/footer') %>

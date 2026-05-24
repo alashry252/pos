@@ -2,10 +2,13 @@
   "name": "export",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "main.js",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
+    "desktop": "electron .",
+    "package-win": "electron-packager . NexusPOS --platform=win32 --arch=x64 --overwrite",
+    "dist-win": "electron-builder --win --x64",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -27,6 +30,32 @@
     "mongoose": "^9.3.3"
   },
   "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "electron-packager": "^17.1.2",
     "nodemon": "^3.1.14"
+  },
+  "build": {
+    "appId": "com.nexuspos.app",
+    "productName": "NexusPOS",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Nexus POS"
+    },
+    "files": [
+      "**/*"
+    ],
+    "asar": true
   }
 }

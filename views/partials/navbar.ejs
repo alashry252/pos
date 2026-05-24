@@ -14,39 +14,49 @@
     </div>
 
     <ul class="sidebar-nav">
-        <li class="nav-item">
-            <a href="/dashboard" class="nav-link">
-                <i class="fa-solid fa-chart-line nav-icon"></i>
-                <span class="nav-text">لوحة القيادة</span>
-            </a>
-        </li>
-        
         <% if (locals.user && locals.user.role === 'admin') { %>
-                    <li class="nav-item">
-            <a href="/admin/users" class="nav-link">
-                <i class="fa-solid fa-users-gear nav-icon"></i>
-                <span class="nav-text">إدارة الصلاحيات</span>
-            </a>
-        </li>
+            <li class="nav-item">
+                <a href="/dashboard" class="nav-link">
+                    <i class="fa-solid fa-chart-line nav-icon"></i>
+                    <span class="nav-text">لوحة القيادة</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a href="/admin/employees" class="nav-link">
+                    <i class="fa-solid fa-users nav-icon"></i>
+                    <span class="nav-text">إدارة الموظفين</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/admin/reports" class="nav-link">
+                    <i class="fa-solid fa-file-invoice-dollar nav-icon"></i>
+                    <span class="nav-text">التقارير المالية</span>
+                </a>
+            </li>
         <% } %>
         
-        <% if (locals.user && locals.user.role === 'admin') { %>
-            <li class="nav-item">
-                <a href="/admin/inventory" class="nav-link">
-                    <i class="fa-solid fa-users-gear nav-icon"></i>
-                    <span class="nav-text">المخزون</span>
-                </a>
-            </li>
-            <% } %>
-            
-            <% if (locals.user && locals.user.role === 'admin') { %>
-            <li class="nav-item">
-                <a href="/admin/pos" class="nav-link">
-                    <i class="fa-solid fa-users-gear nav-icon"></i>
-                    <span class="nav-text">نقاط البيع</span>
-                </a>
-            </li>
-            <% } %>
+        <li class="nav-item">
+            <a href="/admin/inventory" class="nav-link">
+                <i class="fa-solid fa-box-open nav-icon"></i>
+                <span class="nav-text">المخزون</span>
+            </a>
+        </li>
+        
+        <li class="nav-item">
+            <a href="/admin/pos" class="nav-link">
+                <i class="fa-solid fa-cash-register nav-icon"></i>
+                <span class="nav-text">نقاط البيع</span>
+            </a>
+        </li>
+        
+        <li class="nav-item">
+            <a href="/admin/settings" class="nav-link">
+                <i class="fa-solid fa-gear nav-icon"></i>
+                <span class="nav-text">الإعدادات الشخصية</span>
+            </a>
+        </li>
     </ul>
 
     <div class="sidebar-footer">
